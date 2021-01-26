@@ -1,7 +1,0 @@
-docker build --build-arg JAR_FILE=build/libs/anummers-0.0.1-SNAPSHOT.jar -t freerink/anummers .
-
-docker run -p 31080:8080 freerink/anummers
-
-curl -s http://localhost:31080/anummers -d '{"anummer": 1010101025}' -H "Content-Type: application/json"
-
-eval `ssh-agent -s`
