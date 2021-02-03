@@ -3,6 +3,7 @@ package com.reerinkresearch.anummers;
 public class Anummer {
 	private final long index;
 	private final long anummer;
+	private int gemeenteCode;
 	private String error = null;
 	private int errorCode = 0;
 	private long skipTo;
@@ -126,5 +127,13 @@ public class Anummer {
 
 	public long getSkipTo() {
 		return this.skipTo;
+	}
+
+	public int getGemeenteCode() {
+		return gemeenteCode;
+	}
+
+	public void setGemeenteCode(int gemeenteCode) {
+		this.gemeenteCode = gemeenteCode;
 	}
 }

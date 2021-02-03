@@ -2,6 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.5.0-SNAPSHOT'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
+	id 'eclipse'
 }
 
 group = 'com.reerinkresearch'
@@ -15,7 +16,9 @@ repositories {
 }
 
 dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'redis.clients:jedis'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
