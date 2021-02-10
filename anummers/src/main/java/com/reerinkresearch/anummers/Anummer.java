@@ -1,20 +1,15 @@
 package com.reerinkresearch.anummers;
 
 public class Anummer {
-	private final long index;
 	private final long anummer;
 	private int gemeenteCode;
 	private String error = null;
 	private int errorCode = 0;
 	private long skipTo;
 
-	public Anummer(long index, long anummer) {
-		this.index = index;
+	public Anummer(long anummer, int gemeenteCode) {
 		this.anummer = anummer;
-	}
-
-	public long getIndex() {
-		return this.index;
+		this.gemeenteCode = gemeenteCode;
 	}
 
 	public long getAnummer() {

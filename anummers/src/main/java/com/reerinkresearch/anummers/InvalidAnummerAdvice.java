@@ -15,4 +15,25 @@ public class InvalidAnummerAdvice {
 	String invalidAnummerHandler(InvalidAnummerException ex) {
 		return ex.getMessage();
 	}
+
+	@ResponseBody
+	@ExceptionHandler(BadRequestException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	String invalidAnummerHandler(BadRequestException ex) {
+		return ex.getMessage();
+	}
+
+	@ResponseBody
+	@ExceptionHandler(NotFoundException.class)
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	String invalidAnummerHandler(NotFoundException ex) {
+		return ex.getMessage();
+	}
+
+	@ResponseBody
+	@ExceptionHandler(AlreadyExistsException.class)
+	@ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+	String invalidAnummerHandler(AlreadyExistsException ex) {
+		return ex.getMessage();
+	}
 }
