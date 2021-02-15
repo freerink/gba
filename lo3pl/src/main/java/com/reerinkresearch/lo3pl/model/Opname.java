@@ -2,13 +2,13 @@ package com.reerinkresearch.lo3pl.model;
 
 public class Opname {
 
-	private String datumEersteInschrijving;
+	private Datum datumEersteInschrijving;
 
-	public String getDatumEersteInschrijving() {
+	public Datum getDatumEersteInschrijving() {
 		return datumEersteInschrijving;
 	}
 
-	public void setDatumEersteInschrijving(String datumEersteInschrijving) {
+	public void setDatumEersteInschrijving(Datum datumEersteInschrijving) {
 		this.datumEersteInschrijving = datumEersteInschrijving;
 	}
 }

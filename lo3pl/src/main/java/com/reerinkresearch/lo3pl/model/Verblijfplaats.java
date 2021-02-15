@@ -7,6 +7,9 @@ public class Verblijfplaats {
 
 	private Gemeente gemeente;
 
+	public Verblijfplaats() {
+	}
+
 	public Verblijfplaats(int gemeenteCode) {
 		this.gemeente = new Gemeente(gemeenteCode);
 	}

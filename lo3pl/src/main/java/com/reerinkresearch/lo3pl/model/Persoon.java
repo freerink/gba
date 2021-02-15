@@ -3,13 +3,19 @@ package com.reerinkresearch.lo3pl.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.redis.core.index.Indexed;
+
 public class Persoon {
 
+	@Indexed
 	private long anummer;
 	
-	private long bsn;
+	private Long bsn;
 	
 	private Naam naam;
+	
+	public Persoon() {	
+	}
 	
 	public Persoon(long anummer, String geslachtsnaam) {
 		this.anummer = anummer;
@@ -24,11 +30,11 @@ public class Persoon {
 		this.anummer = anummer;
 	}
 	
-	public long getBsn() {
+	public Long getBsn() {
 		return bsn;
 	}
 
-	public void setBsn(long bsn) {
+	public void setBsn(Long bsn) {
 		this.bsn = bsn;
 	}
 

@@ -2,18 +2,21 @@ package com.reerinkresearch.lo3pl.model;
 
 public class Gemeente {
 
-	private int gemeenteCode;
+	private Integer gemeenteCode;
 	private Datum datumVanInschrijving;
-	
+
+	public Gemeente() {
+	}
+
 	public Gemeente(int gemeenteCode) {
 		this.setGemeenteCode(gemeenteCode);
 	}
 	
-	public int getGemeenteCode() {
+	public Integer getGemeenteCode() {
 		return gemeenteCode;
 	}
 	
-	public void setGemeenteCode(int gemeenteCode) {
+	public void setGemeenteCode(Integer gemeenteCode) {
 		this.gemeenteCode = gemeenteCode;
 	}
 	

@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -118,7 +119,7 @@ public class AnummersApplication {
 	}
 
 	@PostMapping("/anummers")
-	Anummer storeAnummer(@RequestBody Anummer a) {
+	public Anummer storeAnummer(@RequestBody Anummer a) {
 		// Check if we received a valid A number
 		if (!a.isValid()) {
 			throw new InvalidAnummerException(a);
@@ -133,6 +134,20 @@ public class AnummersApplication {
 			throw new AlreadyExistsException("Anummer " + a.getAnummer());
 		}
 		return a;
+	}
+	
+	@DeleteMapping("/anummers")
+	public long deleteAllAnummers() {
+		long count = anummerRepo.count();
+		anummerRepo.deleteAll();
+		return count;
+	}
+
+	@DeleteMapping("/names")
+	public long deleteAllNames() {
+		long count = nameRepo.count();
+		nameRepo.deleteAll();
+		return count;
 	}
 
 	public static void main(String[] args) {

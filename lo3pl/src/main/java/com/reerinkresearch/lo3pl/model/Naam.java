@@ -1,35 +1,43 @@
 package com.reerinkresearch.lo3pl.model;
 
+import org.springframework.data.redis.core.index.Indexed;
+
 public class Naam {
 
-	private String Voornamen, Voorvoegsel, Geslachtsnaam;
+	private String voornamen;
+	private String voorvoegsel;
+	@Indexed
+	private String geslachtsnaam;
 
+	public Naam() {	
+	}
+	
 	public Naam(String geslachtsnaam) {
 		this.setGeslachtsnaam(geslachtsnaam);
 	}
 
 	public String getVoornamen() {
-		return Voornamen;
+		return voornamen;
 	}
 
 	public void setVoornamen(String voornamen) {
-		Voornamen = voornamen;
+		this.voornamen = voornamen;
 	}
 
 	public String getVoorvoegsel() {
-		return Voorvoegsel;
+		return voorvoegsel;
 	}
 
 	public void setVoorvoegsel(String voorvoegsel) {
-		Voorvoegsel = voorvoegsel;
+		this.voorvoegsel = voorvoegsel;
 	}
 
 	public String getGeslachtsnaam() {
-		return Geslachtsnaam;
+		return geslachtsnaam;
 	}
 
 	public void setGeslachtsnaam(String geslachtsnaam) {
-		Geslachtsnaam = geslachtsnaam;
+		this.geslachtsnaam = geslachtsnaam;
 	}
 	
 }
