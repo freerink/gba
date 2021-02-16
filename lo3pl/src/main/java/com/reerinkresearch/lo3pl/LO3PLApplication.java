@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.reerinkresearch.lo3pl.model.PLException;
 import com.reerinkresearch.lo3pl.model.PersoonsLijst;
 import com.reerinkresearch.lo3pl.repo.PersoonsLijstRepository;
 
@@ -29,7 +30,7 @@ public class LO3PLApplication {
 	public List<PersoonsLijst> getPL(@RequestParam(value = "anummer", required = false) Long anummer,
 			@RequestParam(value = "isHistorischZoeken", required = false) Boolean isHistorischZoeken,
 			@RequestParam(value = "geslachtsnaam", required = false) String geslachtsnaam,
-			@RequestParam(value = "id", required = false) Long id) {
+			@RequestParam(value = "id", required = false) String id) {
 		List<PersoonsLijst> list = new ArrayList<PersoonsLijst>();
 		boolean searchInHistory = (isHistorischZoeken != null && isHistorischZoeken);
 		if (id != null) {
@@ -61,7 +62,7 @@ public class LO3PLApplication {
 					surname = geslachtsnaam.substring(0, geslachtsnaam.length() - 1);
 					exactMatch = false;
 				} else {
-					throw new RuntimeException("Mag niet zoeken met alleen *");
+					throw new PLException("Mag niet zoeken met alleen *");
 				}
 			}
 			Iterator<PersoonsLijst> it = plRepo.findAll().iterator();
@@ -98,8 +99,6 @@ public class LO3PLApplication {
 
 	@PostMapping("/persoonslijsten")
 	public PersoonsLijst storePL(@RequestBody PersoonsLijst pl) {
-		long count = plRepo.count();
-		pl.setId(count);
 		plRepo.save(pl);
 		return pl;
 	}
