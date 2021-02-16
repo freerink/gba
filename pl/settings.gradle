@@ -8,4 +8,3 @@
  */
 
 rootProject.name = 'pl'
-include('lib')
