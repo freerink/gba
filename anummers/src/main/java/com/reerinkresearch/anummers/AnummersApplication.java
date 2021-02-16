@@ -34,7 +34,7 @@ public class AnummersApplication {
 		List<Name> names = new ArrayList<Name>();
 		if (id != null) {
 			Optional<Name> foundName = nameRepo.findById(id);
-			if( foundName.isPresent() ) {
+			if (foundName.isPresent()) {
 				names.add(foundName.get());
 			} else {
 				throw new NotFoundException("Name with id:" + id);
@@ -42,17 +42,19 @@ public class AnummersApplication {
 		} else if (isCount != null && isCount) {
 			// Return the last index
 			long count = nameRepo.count();
-			Optional<Name> foundName = nameRepo.findById((int) count - 1);
-			if( foundName.isPresent() ) {
-				names.add(foundName.get());
-			} else {
-				throw new NotFoundException("Name with id:" + id);
+			if (count > 0) {
+				Optional<Name> foundName = nameRepo.findById((int) count - 1);
+				if (foundName.isPresent()) {
+					names.add(foundName.get());
+				} else {
+					throw new NotFoundException("Name with id:" + id);
+				}
 			}
 		} else {
 			long count = nameRepo.count();
 			int random = getRandomNumber(0, (int) count - 1);
 			Optional<Name> foundName = nameRepo.findById(random);
-			if( foundName.isPresent() ) {
+			if (foundName.isPresent()) {
 				names.add(foundName.get());
 			} else {
 				throw new NotFoundException("Name with id:" + id);
@@ -62,9 +64,9 @@ public class AnummersApplication {
 	}
 
 	private int getRandomNumber(int min, int max) {
-	    return (int) ((Math.random() * (max - min)) + min);
+		return (int) ((Math.random() * (max - min)) + min);
 	}
-	
+
 	@PostMapping("/names")
 	Name storeName(@RequestBody Name name) {
 		if (name == null) {
@@ -135,7 +137,7 @@ public class AnummersApplication {
 		}
 		return a;
 	}
-	
+
 	@DeleteMapping("/anummers")
 	public long deleteAllAnummers() {
 		long count = anummerRepo.count();
