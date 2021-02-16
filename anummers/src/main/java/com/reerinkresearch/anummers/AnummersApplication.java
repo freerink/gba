@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.reerinkresearch.anummers.model.Name;
 import com.reerinkresearch.anummers.repo.AnummerRepository;
 import com.reerinkresearch.anummers.repo.NameRepository;
+import com.reerinkresearch.pl.PersoonsLijst;
 
 @SpringBootApplication
 @RestController
@@ -63,8 +64,42 @@ public class AnummersApplication {
 		return names;
 	}
 
+	private String getRandomName() {
+		long count = nameRepo.count();
+		if (count > 0) {
+			int random = getRandomNumber(0, (int) count - 1);
+			Optional<Name> foundName = nameRepo.findById(random);
+			if (foundName.isPresent()) {
+				return foundName.get().getName();
+			}
+		}
+		return null;
+	}
+
 	private int getRandomNumber(int min, int max) {
-		return (int) ((Math.random() * (max - min)) + min);
+		double rand = Math.random();
+		return (int) ((rand * rand * (max + 1 - min)) + min);
+	}
+
+	private long getRandomNumber(long min, long max) {
+		double rand = Math.random();
+		return (long) ((rand * (max + 1 - min)) + min);
+	}
+
+	@GetMapping("/randoms")
+	public int[] getRandomFrequencies(@RequestParam(value = "iterations", required = false) Integer iterations,
+			@RequestParam(value = "min", required = false) Integer min,
+			@RequestParam(value = "max", required = false) Integer max) {
+		int localMin = (min != null ? min : 1);
+		int localMax = (max != null ? max : 100);
+		int localIterations = (iterations != null ? iterations : 100000);
+
+		int[] freqs = new int[localMax - localMin + 1];
+		for (int i = 0; i < localIterations; i++) {
+			int rand = getRandomNumber(localMin, localMax);
+			freqs[rand - localMin]++;
+		}
+		return freqs;
 	}
 
 	@PostMapping("/names")
@@ -150,6 +185,53 @@ public class AnummersApplication {
 		long count = nameRepo.count();
 		nameRepo.deleteAll();
 		return count;
+	}
+
+	@PostMapping("/generatePersoonslijst")
+	public PersoonsLijst generateAndStorePL() {
+		// Gemeente code bepalen (random tussen 1 en 200 incl.)
+		int gemeenteCode = getRandomNumber(1, 200);
+		
+		// A nummer ophalen voor gemeente code
+		long randStartFrom = this.getRandomNumber(1010101025L, 9010101010L);
+		Anummer a = this.getAnummer(randStartFrom, 10000L, null);
+		if( !a.isValid()) {
+			throw new InvalidAnummerException(a);
+		}
+		// Store the A nummer for this gemeente
+		//this.storeAnummer(a);
+		
+		// Namen ophalen: voornamen 1-4, voorvoegsel 0-2, geslachtsnaam 1-3
+		String voornamen = this.generateNames(1, 4);
+		String geslachtsnaam = this.generateNames(1, 3);
+		String voorvoegsel = this.generateVoorvoegsel(0, 2);
+		
+		// PL genereren
+		PersoonsLijst pl = new PersoonsLijst(a.getAnummer(), geslachtsnaam, gemeenteCode);
+		pl.getPersoon().get(0).getNaam().setVoornamen(voornamen);
+		pl.getPersoon().get(0).getNaam().setVoorvoegsel(voorvoegsel);
+		return pl;
+	}
+
+	private String generateVoorvoegsel(int min, int max) {
+		StringBuffer buf = new StringBuffer();
+		String[] voorvoegsels = {"a", "'t", "auf", "den", "der", "am", "bij", "da", "del", "du", "de", "van", "der", "den", "tot"};
+		
+		int rand = this.getRandomNumber(min, max);
+		for (int i = 0; i < rand; i++) {
+			buf.append(voorvoegsels[this.getRandomNumber(0, voorvoegsels.length - 1)] + " ");
+		}
+		return buf.length() == 0 ? null : buf.toString().strip();
+	}
+
+	private String generateNames(int min, int max) {
+		StringBuffer buf = new StringBuffer();
+		
+		int rand = getRandomNumber(min, max);
+		for (int i = 0; i < rand; i++) {
+			buf.append(getRandomName() + " ");
+		}
+		return buf.toString().strip();
 	}
 
 	public static void main(String[] args) {
