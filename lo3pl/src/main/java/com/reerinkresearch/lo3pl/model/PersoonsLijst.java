@@ -81,19 +81,5 @@ public class PersoonsLijst {
 	public List<Verblijfplaats> getVerblijfplaats(){
 		return this.verblijfplaats;
 	}
-	
-	/*
-	@Override
-	public String toString() {
-		ObjectMapper mapper = new ObjectMapper();
-		String json;
-		try {
-			json = mapper.writeValueAsString(this);
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e.getMessage());
-		}
-		return "Persoonslijst={anummer=" + this.getAnummer() + ", pl=\""+ json + "\"}";
-	}
-	*/
-	
+		
 }

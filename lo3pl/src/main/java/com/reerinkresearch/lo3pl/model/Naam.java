@@ -1,12 +1,9 @@
 package com.reerinkresearch.lo3pl.model;
 
-import org.springframework.data.redis.core.index.Indexed;
-
 public class Naam {
 
 	private String voornamen;
 	private String voorvoegsel;
-	@Indexed
 	private String geslachtsnaam;
 
 	public Naam() {	

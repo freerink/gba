@@ -3,11 +3,8 @@ package com.reerinkresearch.lo3pl.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.data.redis.core.index.Indexed;
-
 public class Persoon {
 
-	@Indexed
 	private long anummer;
 	
 	private Long bsn;
