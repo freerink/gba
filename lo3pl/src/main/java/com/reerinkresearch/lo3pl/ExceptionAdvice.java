@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.reerinkresearch.lo3pl.model.PLException;
+import com.reerinkresearch.pl.PLException;
 
 @ControllerAdvice
 public class ExceptionAdvice {

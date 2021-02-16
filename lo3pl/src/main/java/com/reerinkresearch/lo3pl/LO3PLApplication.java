@@ -15,8 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.reerinkresearch.lo3pl.model.PLException;
-import com.reerinkresearch.lo3pl.model.PersoonsLijst;
+import com.reerinkresearch.pl.PLException;
+import com.reerinkresearch.pl.PersoonsLijst;
+import com.reerinkresearch.lo3pl.model.PersoonsLijstWrapper;
 import com.reerinkresearch.lo3pl.repo.PersoonsLijstRepository;
 
 @SpringBootApplication
@@ -27,27 +28,28 @@ public class LO3PLApplication {
 	PersoonsLijstRepository plRepo;
 
 	@GetMapping("/persoonslijsten")
-	public List<PersoonsLijst> getPL(@RequestParam(value = "anummer", required = false) Long anummer,
+	public List<PersoonsLijstWrapper> getPL(@RequestParam(value = "anummer", required = false) Long anummer,
 			@RequestParam(value = "isHistorischZoeken", required = false) Boolean isHistorischZoeken,
 			@RequestParam(value = "geslachtsnaam", required = false) String geslachtsnaam,
 			@RequestParam(value = "id", required = false) String id) {
-		List<PersoonsLijst> list = new ArrayList<PersoonsLijst>();
+		List<PersoonsLijstWrapper> list = new ArrayList<PersoonsLijstWrapper>();
 		boolean searchInHistory = (isHistorischZoeken != null && isHistorischZoeken);
 		if (id != null) {
-			Optional<PersoonsLijst> result = plRepo.findById(id);
+			Optional<PersoonsLijstWrapper> result = plRepo.findById(id);
 			if (result.isPresent()) {
 				list.add(result.get());
 			}
 		} else if (anummer != null) {
-			Iterator<PersoonsLijst> it = plRepo.findAll().iterator();
+			Iterator<PersoonsLijstWrapper> it = plRepo.findAll().iterator();
 			while (it.hasNext()) {
-				PersoonsLijst pl = it.next();
+				PersoonsLijstWrapper w = it.next();
+				PersoonsLijst pl = w.getPl();
 				if (pl.getPersoon() != null) {
 					// Actueel zoeken of eventueel ook historisch
 					int i = 0;
 					while (i < (searchInHistory ? pl.getPersoon().size() : 1)) {
 						if (pl.getPersoon().get(i).getAnummer() == anummer) {
-							list.add(pl);
+							list.add(w);
 							break;
 						}
 						i++;
@@ -65,9 +67,10 @@ public class LO3PLApplication {
 					throw new PLException("Mag niet zoeken met alleen *");
 				}
 			}
-			Iterator<PersoonsLijst> it = plRepo.findAll().iterator();
+			Iterator<PersoonsLijstWrapper> it = plRepo.findAll().iterator();
 			while (it.hasNext()) {
-				PersoonsLijst pl = it.next();
+				PersoonsLijstWrapper w = it.next();
+				PersoonsLijst pl = w.getPl();
 				if (pl.getPersoon() != null) {
 					// Actueel zoeken of eventueel ook historisch
 					int i = 0;
@@ -77,7 +80,7 @@ public class LO3PLApplication {
 								&& ((exactMatch && pl.getPersoon().get(i).getNaam().getGeslachtsnaam().equals(surname))
 										|| (!exactMatch && pl.getPersoon().get(i).getNaam().getGeslachtsnaam()
 												.startsWith(surname)))) {
-							list.add(pl);
+							list.add(w);
 							break;
 						}
 						i++;
@@ -88,19 +91,14 @@ public class LO3PLApplication {
 		return list;
 	}
 
-	@GetMapping("/generatePersoonslijst")
-	public PersoonsLijst generatePL(@RequestParam(value = "anummer", required = true) Long anummer,
-			@RequestParam(value = "geslachtsnaam", required = true) String geslachtsnaam,
-			@RequestParam(value = "gemeenteCode", required = true) Integer gemeenteCode) {
-		long count = plRepo.count();
-		PersoonsLijst pl = new PersoonsLijst(count, anummer, geslachtsnaam, gemeenteCode);
-		return pl;
-	}
-
 	@PostMapping("/persoonslijsten")
-	public PersoonsLijst storePL(@RequestBody PersoonsLijst pl) {
-		plRepo.save(pl);
-		return pl;
+	public PersoonsLijstWrapper storePL(@RequestBody PersoonsLijst pl) {
+		
+		PersoonsLijstWrapper wrapper = new PersoonsLijstWrapper();
+		wrapper.setPl(pl);
+		
+		PersoonsLijstWrapper saved = plRepo.save(wrapper);
+		return saved;
 	}
 
 	@DeleteMapping("/persoonslijsten")

@@ -3,7 +3,7 @@ package com.reerinkresearch.lo3pl.repo;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import com.reerinkresearch.lo3pl.model.PersoonsLijst;
+import com.reerinkresearch.lo3pl.model.PersoonsLijstWrapper;
 
 @Repository
-public interface PersoonsLijstRepository extends CrudRepository<PersoonsLijst, String> {}
+public interface PersoonsLijstRepository extends CrudRepository<PersoonsLijstWrapper, String> {}

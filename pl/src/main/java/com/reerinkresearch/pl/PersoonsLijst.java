@@ -37,6 +37,10 @@ public class PersoonsLijst {
 		this.persoon.get(0).setAnummer(anummer);
 	}
 	
+	public void setPersoon(List<Persoon> persoon) {
+		this.persoon = persoon;
+	}
+	
 	public List<Persoon> getPersoon() {
 		return this.persoon;
 	}
@@ -46,6 +50,14 @@ public class PersoonsLijst {
 			throw new PLException("Need at least a current Ouder" + (ouder + 1));
 		}
 		return this.ouder.get(ouder).get(0);
+	}
+	
+	public void setOuder(List<List<Ouder>> ouder) {
+		this.ouder = ouder;
+	}
+
+	public List<List<Ouder>> getOuder() {
+		return this.ouder;
 	}
 	
 	public List<Ouder> getOuder(int ouder) {
@@ -63,6 +75,10 @@ public class PersoonsLijst {
 		this.inschrijving = inschrijving;
 	}
 
+	public void setVerblijfplaats(List<Verblijfplaats> verblijfplaats) {
+		this.verblijfplaats = verblijfplaats;
+	}
+	
 	public List<Verblijfplaats> getVerblijfplaats(){
 		return this.verblijfplaats;
 	}
