@@ -103,18 +103,17 @@ public class AnummersApplication {
 	}
 
 	@PostMapping("/names")
-	Name storeName(@RequestBody Name name) {
-		if (name == null) {
-			throw new BadRequestException("Specify a name object to add to the data store.");
-		}
+	public Name storeName(@RequestBody Name name) {
 		if (name == null || name.getName() == null || name.getName().length() == 0) {
 			throw new BadRequestException("Specify a name to add to the data store.");
 		}
 		if (nameRepo.existsById(name.getId())) {
 			throw new AlreadyExistsException("Name id: " + name.getId());
 		}
-		nameRepo.save(name);
-		return name;
+		// Make sure the name starts with a capital and that the rest is lowercase
+		String localName = name.getName().substring(0, 1).toUpperCase() + name.getName().substring(1, name.getName().length()).toLowerCase();
+		name.setName(localName);
+		return nameRepo.save(name);
 	}
 
 	@GetMapping("/anummers")
@@ -199,7 +198,8 @@ public class AnummersApplication {
 			throw new InvalidAnummerException(a);
 		}
 		// Store the A nummer for this gemeente
-		//this.storeAnummer(a);
+		a.setGemeenteCode(gemeenteCode);
+		this.storeAnummer(a);
 		
 		// Namen ophalen: voornamen 1-4, voorvoegsel 0-2, geslachtsnaam 1-3
 		String voornamen = this.generateNames(1, 4);

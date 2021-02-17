@@ -4,10 +4,11 @@ URLPL=http://localhost:41080/persoonslijsten
 echo "Store all PLs to $URLPL"
 TMP=/dev/null
 OUT=/tmp/pl.json
+COUNT=1
 ID=0
 #
 #
-while test $ID -lt 1000
+while test $ID -lt $COUNT
 do
 	curl -s $URLGEN -d "{}" -H "Content-Type: application/json" > $OUT
 	curl -s $URLPL -d "@$OUT" -H "Content-Type: application/json" > $TMP
