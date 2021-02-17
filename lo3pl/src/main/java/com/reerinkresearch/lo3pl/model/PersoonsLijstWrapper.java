@@ -1,34 +1,27 @@
 package com.reerinkresearch.lo3pl.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.redis.core.RedisHash;
-import com.reerinkresearch.pl.PersoonsLijst;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.Table;
 
-@RedisHash("persoonslijst")
+@Table
 public class PersoonsLijstWrapper {
 	
-	@Id
-	private String id;
+	@PrimaryKey
+	private final String id;
 	
-	private PersoonsLijst pl;
+	private final String pl; // As a JSON string
 	
-	public PersoonsLijstWrapper() {
+	public PersoonsLijstWrapper(String id, String pl) {
+		this.id = id;
+		this.pl = pl;
 	}
 
 	public String getId() {
 		return id;
 	}
 
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public PersoonsLijst getPl() {
+	public String getPl() {
 		return pl;
-	}
-
-	public void setPl(PersoonsLijst pl) {
-		this.pl = pl;
 	}
 
 }

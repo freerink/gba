@@ -1,0 +1,16 @@
+
+* Deployment for anummers
+kubectl create deployment anummers --image=freerink/anummers --replicas=2 --dry-run=client -o yaml > anummers-deploy.yaml
+kubectl expose deployment anummers --name=anummers-service --port=8080 --type=NodePort
+
+* Deployment for persoonslijsten
+kubectl create deployment persoonslijsten --image=freerink/persoonslijsten --replicas=2 --dry-run=client -o yaml > persoonslijsten-deploy.yaml
+kubectl create -f persoonslijsten-deploy.yaml
+kubectl expose deployment persoonslijsten --name=persoonslijsten-service --port=8080 --type=NodePort
+
+
+* Cassandra
+create keyspace gbaplkeyspace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};
+use gbaplkeyspace;
+
+CREATE TABLE persoonslijstwrapper (id text PRIMARY KEY, pl text);
