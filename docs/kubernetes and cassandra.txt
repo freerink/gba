@@ -17,4 +17,4 @@ use gbaplkeyspace;
 CREATE TABLE persoonslijstwrapper (id text PRIMARY KEY, anummer bigint, geslachtsnaam text, pl text);
 create index on persoonslijstwrapper (anummer);
 # create index on persoonslijstwrapper (geslachtsnaam);
-CREATE CUSTOM INDEX ON persoonslijstwrapper (geslachtsnaam) USING 'org.apache.cassandra.index.sasi.SASIIndex' WITH OPTIONS = {'mode': 'CONTAINS', 'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'case_sensitive': 'false'};
+CREATE CUSTOM INDEX ON persoonslijstwrapper (geslachtsnaam) USING 'org.apache.cassandra.index.sasi.SASIIndex' WITH OPTIONS = {'mode': 'PREFIX', 'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'case_sensitive': 'false'};

@@ -12,7 +12,5 @@ public interface PersoonsLijstRepository extends CrudRepository<PersoonsLijstWra
 	
 	List<PersoonsLijstWrapper> findByAnummer(long anummer);
 	
-	//List<PersoonsLijstWrapper> findByGeslachtsnaam (String geslachtsnaam);
-	
-	List<PersoonsLijstWrapper> findByGeslachtsnaamStartingWith(String geslachtsnaam);
+	List<PersoonsLijstWrapper> findByGeslachtsnaamLike(String geslachtsnaam);
 }

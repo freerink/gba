@@ -62,17 +62,27 @@ public class LO3PLApplication {
 				}
 			}
 		} else if (geslachtsnaam != null && geslachtsnaam.length() > 0) {
-			String surname = geslachtsnaam;
-			boolean exactMatch = true;
-			if (geslachtsnaam.endsWith("*")) {
-				if (geslachtsnaam.length() > 1) {
-					surname = geslachtsnaam.substring(0, geslachtsnaam.length() - 1);
-					exactMatch = false;
+			String surname;
+			final String wildcard = "*";
+			// The search string may only contain 1 wildcard character and it must be the last
+			int wildcardIndex = geslachtsnaam.indexOf(wildcard);
+			if (wildcardIndex > -1) {
+				// wildcard found
+				if (wildcardIndex == (geslachtsnaam.length() - 1)) {
+					if (wildcardIndex > 0) {
+						surname = geslachtsnaam.replace(wildcard, "%");
+					} else {
+						throw new PLException("Er mag niet gezocht worden met alleen *");
+					}
 				} else {
-					throw new PLException("Er mag niet gezocht worden met alleen *");
+					throw new PLException(
+							"Er mag slechts 1 * in de zoekterm voorkomen en deze moet aan het einde staan");
 				}
+			} else {
+				// Geen wildcard
+				surname = geslachtsnaam;
 			}
-			Iterator<PersoonsLijstWrapper> it = plRepo.findByGeslachtsnaamStartingWith("%"+surname+"%").iterator();
+			Iterator<PersoonsLijstWrapper> it = plRepo.findByGeslachtsnaamLike(surname).iterator();
 			while (it.hasNext()) {
 				PersoonsLijstWrapper w = it.next();
 				PersoonsLijst pl;
@@ -83,25 +93,17 @@ public class LO3PLApplication {
 					e.printStackTrace();
 				}
 			}
-
 		}
 		return list;
 	}
 
 	@PostMapping("/persoonslijsten")
 	public String storePL(@RequestBody PersoonsLijst pl) {
-		// ObjectMapper objectMapper = new ObjectMapper();
-		// String plAsString;
-		// try {
-		// plAsString = objectMapper.writeValueAsString(pl);
 		PersoonsLijstWrapper wrapper = new PersoonsLijstWrapper(UUID.randomUUID().toString(), null);
 		wrapper.setPl(pl);
 
 		PersoonsLijstWrapper saved = plRepo.save(wrapper);
 		return saved.getId();
-		// } catch (JsonProcessingException e) {
-		// throw new PLException("JsonProcessingException: " + e.getMessage());
-		// }
 	}
 
 	@DeleteMapping("/persoonslijsten")
