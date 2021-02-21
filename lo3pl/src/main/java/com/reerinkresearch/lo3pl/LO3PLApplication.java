@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.reerinkresearch.pl.PLException;
 import com.reerinkresearch.pl.PersoonsLijst;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reerinkresearch.lo3pl.model.PersoonsLijstWrapper;
 import com.reerinkresearch.lo3pl.repo.PersoonsLijstRepository;
 
@@ -28,63 +31,66 @@ public class LO3PLApplication {
 	PersoonsLijstRepository plRepo;
 
 	@GetMapping("/persoonslijsten")
-	public List<PersoonsLijstWrapper> getPL(@RequestParam(value = "anummer", required = false) Long anummer,
-			@RequestParam(value = "isHistorischZoeken", required = false) Boolean isHistorischZoeken,
+	public List<PersoonsLijst> getPL(@RequestParam(value = "anummer", required = false) Long anummer,
 			@RequestParam(value = "geslachtsnaam", required = false) String geslachtsnaam,
 			@RequestParam(value = "id", required = false) String id) {
-		List<PersoonsLijstWrapper> list = new ArrayList<PersoonsLijstWrapper>();
-		boolean searchInHistory = (isHistorischZoeken != null && isHistorischZoeken);
+
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		List<PersoonsLijst> list = new ArrayList<PersoonsLijst>();
 		if (id != null) {
 			Optional<PersoonsLijstWrapper> result = plRepo.findById(id);
 			if (result.isPresent()) {
-				list.add(result.get());
+				PersoonsLijst pl;
+				try {
+					pl = objectMapper.readValue(result.get().getPl(), PersoonsLijst.class);
+					list.add(pl);
+				} catch (JsonProcessingException e) {
+					e.printStackTrace();
+				}
 			}
 		} else if (anummer != null) {
-			Iterator<PersoonsLijstWrapper> it = plRepo.findAll().iterator();
+			Iterator<PersoonsLijstWrapper> it = plRepo.findByAnummer(anummer).iterator();
 			while (it.hasNext()) {
 				PersoonsLijstWrapper w = it.next();
-				PersoonsLijst pl = w.getPl();
-				if (pl.getPersoon() != null) {
-					// Actueel zoeken of eventueel ook historisch
-					int i = 0;
-					while (i < (searchInHistory ? pl.getPersoon().size() : 1)) {
-						if (pl.getPersoon().get(i).getAnummer() == anummer) {
-							list.add(w);
-							break;
-						}
-						i++;
-					}
+				PersoonsLijst pl;
+				try {
+					pl = objectMapper.readValue(w.getPl(), PersoonsLijst.class);
+					list.add(pl);
+				} catch (JsonProcessingException e) {
+					e.printStackTrace();
 				}
 			}
 		} else if (geslachtsnaam != null && geslachtsnaam.length() > 0) {
-			String surname = geslachtsnaam;
-			boolean exactMatch = true;
-			if (geslachtsnaam.endsWith("*")) {
-				if (geslachtsnaam.length() > 1) {
-					surname = geslachtsnaam.substring(0, geslachtsnaam.length() - 1);
-					exactMatch = false;
+			String surname;
+			final String wildcard = "*";
+			// The search string may only contain 1 wildcard character and it must be the last
+			int wildcardIndex = geslachtsnaam.indexOf(wildcard);
+			if (wildcardIndex > -1) {
+				// wildcard found
+				if (wildcardIndex == (geslachtsnaam.length() - 1)) {
+					if (wildcardIndex > 0) {
+						surname = geslachtsnaam.replace(wildcard, "%");
+					} else {
+						throw new PLException("Er mag niet gezocht worden met alleen *");
+					}
 				} else {
-					throw new PLException("Mag niet zoeken met alleen *");
+					throw new PLException(
+							"Er mag slechts 1 * in de zoekterm voorkomen en deze moet aan het einde staan");
 				}
+			} else {
+				// Geen wildcard
+				surname = geslachtsnaam;
 			}
-			Iterator<PersoonsLijstWrapper> it = plRepo.findAll().iterator();
+			Iterator<PersoonsLijstWrapper> it = plRepo.findByGeslachtsnaamLike(surname).iterator();
 			while (it.hasNext()) {
 				PersoonsLijstWrapper w = it.next();
-				PersoonsLijst pl = w.getPl();
-				if (pl.getPersoon() != null) {
-					// Actueel zoeken of eventueel ook historisch
-					int i = 0;
-					while (i < (searchInHistory ? pl.getPersoon().size() : 1)) {
-						if (pl.getPersoon().get(i).getNaam() != null
-								&& pl.getPersoon().get(i).getNaam().getGeslachtsnaam() != null
-								&& ((exactMatch && pl.getPersoon().get(i).getNaam().getGeslachtsnaam().equals(surname))
-										|| (!exactMatch && pl.getPersoon().get(i).getNaam().getGeslachtsnaam()
-												.startsWith(surname)))) {
-							list.add(w);
-							break;
-						}
-						i++;
-					}
+				PersoonsLijst pl;
+				try {
+					pl = objectMapper.readValue(w.getPl(), PersoonsLijst.class);
+					list.add(pl);
+				} catch (JsonProcessingException e) {
+					e.printStackTrace();
 				}
 			}
 		}
@@ -92,13 +98,12 @@ public class LO3PLApplication {
 	}
 
 	@PostMapping("/persoonslijsten")
-	public PersoonsLijstWrapper storePL(@RequestBody PersoonsLijst pl) {
-		
-		PersoonsLijstWrapper wrapper = new PersoonsLijstWrapper();
+	public String storePL(@RequestBody PersoonsLijst pl) {
+		PersoonsLijstWrapper wrapper = new PersoonsLijstWrapper(UUID.randomUUID().toString(), null);
 		wrapper.setPl(pl);
-		
+
 		PersoonsLijstWrapper saved = plRepo.save(wrapper);
-		return saved;
+		return saved.getId();
 	}
 
 	@DeleteMapping("/persoonslijsten")

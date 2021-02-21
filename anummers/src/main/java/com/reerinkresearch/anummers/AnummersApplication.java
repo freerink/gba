@@ -1,9 +1,12 @@
 package com.reerinkresearch.anummers;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,6 +26,8 @@ import com.reerinkresearch.pl.PersoonsLijst;
 @RestController
 public class AnummersApplication {
 
+	private static final Logger LOG = LoggerFactory.getLogger(AnummersApplication.class);
+	
 	@Autowired
 	AnummerRepository anummerRepo;
 
@@ -111,7 +116,8 @@ public class AnummersApplication {
 			throw new AlreadyExistsException("Name id: " + name.getId());
 		}
 		// Make sure the name starts with a capital and that the rest is lowercase
-		String localName = name.getName().substring(0, 1).toUpperCase() + name.getName().substring(1, name.getName().length()).toLowerCase();
+		String localName = name.getName().substring(0, 1).toUpperCase()
+				+ name.getName().substring(1, name.getName().length()).toLowerCase();
 		name.setName(localName);
 		return nameRepo.save(name);
 	}
@@ -119,7 +125,8 @@ public class AnummersApplication {
 	@GetMapping("/anummers")
 	public Anummer getAnummer(@RequestParam(value = "startFrom", required = false) Long startFrom,
 			@RequestParam(value = "maxIterations", required = false) Long maxIiterations,
-			@RequestParam(value = "anummer", required = false) Long anummer) {
+			@RequestParam(value = "anummer", required = false) Long anummer,
+			@RequestParam(value = "firstAvailable", required = false) Boolean firstAvailable) {
 
 		// Check the repo for the existence of the A-number
 		Anummer a;
@@ -136,6 +143,19 @@ public class AnummersApplication {
 			}
 			com.reerinkresearch.anummers.model.Anummer p = persistedAnummer.get();
 			a = new Anummer(anummer, p.getGemeenteCode() != null ? p.getGemeenteCode() : 0);
+		} else if (firstAvailable != null && firstAvailable) {
+			// Return the first available A nummer (where gemeenteCode == 0) from the store
+			LOG.info("Get first available A nummer");
+			Iterator<com.reerinkresearch.anummers.model.Anummer> it = anummerRepo.findAll().iterator();
+			while (it.hasNext()) {
+				com.reerinkresearch.anummers.model.Anummer p = it.next();
+				LOG.debug("A nummer: " + p.getAnummer() + ", " + p.getGemeenteCode());
+				if (p.getGemeenteCode() == null || p.getGemeenteCode() == 0) {
+					a = new Anummer(p.getAnummer(), 0);
+					return a;
+				}
+			}
+			throw new NotFoundException("Geen vrij A nummer gevonden");
 		} else {
 			if (startFrom == null) {
 				startFrom = 1010101025L;
@@ -167,7 +187,14 @@ public class AnummersApplication {
 					a.getAnummer(), a.getGemeenteCode());
 			anummerRepo.save(persistedAnummer);
 		} else {
-			throw new AlreadyExistsException("Anummer " + a.getAnummer());
+			// Update if the persisted gemeenteCode == 0 
+			Optional<com.reerinkresearch.anummers.model.Anummer> p = anummerRepo.findById(a.getAnummer());
+			if (p.isPresent() && p.get().getGemeenteCode() != null && p.get().getGemeenteCode() == 0) {
+				p.get().setGemeenteCode(a.getGemeenteCode());
+				anummerRepo.save(p.get());
+			} else {
+				throw new AlreadyExistsException("Anummer " + a.getAnummer());
+			}
 		}
 		return a;
 	}
@@ -187,25 +214,24 @@ public class AnummersApplication {
 	}
 
 	@PostMapping("/generatePersoonslijst")
-	public PersoonsLijst generateAndStorePL() {
+	public PersoonsLijst generatePLAndStoreAnummer() {
 		// Gemeente code bepalen (random tussen 1 en 200 incl.)
 		int gemeenteCode = getRandomNumber(1, 200);
-		
-		// A nummer ophalen voor gemeente code
-		long randStartFrom = this.getRandomNumber(1010101025L, 9010101010L);
-		Anummer a = this.getAnummer(randStartFrom, 10000L, null);
-		if( !a.isValid()) {
+
+		// Eerst beschikbare A nummer ophalen voor gemeente code
+		Anummer a = this.getAnummer(null, null, null, true);
+		if (!a.isValid()) {
 			throw new InvalidAnummerException(a);
 		}
 		// Store the A nummer for this gemeente
 		a.setGemeenteCode(gemeenteCode);
 		this.storeAnummer(a);
-		
+
 		// Namen ophalen: voornamen 1-4, voorvoegsel 0-2, geslachtsnaam 1-3
 		String voornamen = this.generateNames(1, 4);
 		String geslachtsnaam = this.generateNames(1, 3);
 		String voorvoegsel = this.generateVoorvoegsel(0, 2);
-		
+
 		// PL genereren
 		PersoonsLijst pl = new PersoonsLijst(a.getAnummer(), geslachtsnaam, gemeenteCode);
 		pl.getPersoon().get(0).getNaam().setVoornamen(voornamen);
@@ -215,8 +241,9 @@ public class AnummersApplication {
 
 	private String generateVoorvoegsel(int min, int max) {
 		StringBuffer buf = new StringBuffer();
-		String[] voorvoegsels = {"a", "'t", "auf", "den", "der", "am", "bij", "da", "del", "du", "de", "van", "der", "den", "tot"};
-		
+		String[] voorvoegsels = { "a", "'t", "auf", "den", "der", "am", "bij", "da", "del", "du", "de", "van", "der",
+				"den", "tot" };
+
 		int rand = this.getRandomNumber(min, max);
 		for (int i = 0; i < rand; i++) {
 			buf.append(voorvoegsels[this.getRandomNumber(0, voorvoegsels.length - 1)] + " ");
@@ -226,7 +253,7 @@ public class AnummersApplication {
 
 	private String generateNames(int min, int max) {
 		StringBuffer buf = new StringBuffer();
-		
+
 		int rand = getRandomNumber(min, max);
 		for (int i = 0; i < rand; i++) {
 			buf.append(getRandomName() + " ");

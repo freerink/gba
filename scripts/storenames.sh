@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-URL=http://localhost:31080/names
+URL=http://192.168.1.245:30913/names
 echo "Store all names to $URL"
 IN=names-20210125.txt
 TMP=/dev/null

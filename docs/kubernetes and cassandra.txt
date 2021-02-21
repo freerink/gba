@@ -1,0 +1,20 @@
+
+* Deployment for anummers
+kubectl create deployment anummers --image=freerink/anummers --replicas=2 --dry-run=client -o yaml > anummers-deploy.yaml
+kubectl expose deployment anummers --name=anummers-service --port=8080 --type=NodePort
+
+* Deployment for persoonslijsten
+kubectl create deployment persoonslijsten --image=freerink/persoonslijsten --replicas=2 --dry-run=client -o yaml > persoonslijsten-deploy.yaml
+kubectl create -f persoonslijsten-deploy.yaml
+kubectl expose deployment persoonslijsten --name=persoonslijsten-service --port=8080 --type=NodePort
+
+
+* Cassandra
+create keyspace gbaplkeyspace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};
+use gbaplkeyspace;
+
+# CREATE TABLE persoonslijstwrapper (id text PRIMARY KEY, pl text);
+CREATE TABLE persoonslijstwrapper (id text PRIMARY KEY, anummer bigint, geslachtsnaam text, pl text);
+create index on persoonslijstwrapper (anummer);
+# create index on persoonslijstwrapper (geslachtsnaam);
+CREATE CUSTOM INDEX ON persoonslijstwrapper (geslachtsnaam) USING 'org.apache.cassandra.index.sasi.SASIIndex' WITH OPTIONS = {'mode': 'PREFIX', 'analyzer_class': 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer', 'case_sensitive': 'false'};
