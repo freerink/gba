@@ -10,8 +10,11 @@ ID=0
 #
 while test $ID -lt $COUNT
 do
+	echo -n "+"
 	curl -s $URLGEN -d "{}" -H "Content-Type: application/json" > $OUT
+	echo -n "."
 	curl -s $URLPL -d "@$OUT" -H "Content-Type: application/json" >> $TMP
+	echo -n "."
 	echo -ne "\n" >> $TMP
 	# echo "Sleep $ID"
 	# sleep 1s

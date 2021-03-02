@@ -64,7 +64,8 @@ public class LO3PLApplication {
 		} else if (geslachtsnaam != null && geslachtsnaam.length() > 0) {
 			String surname;
 			final String wildcard = "*";
-			// The search string may only contain 1 wildcard character and it must be the last
+			// The search string may only contain 1 wildcard character and it must be the
+			// last
 			int wildcardIndex = geslachtsnaam.indexOf(wildcard);
 			if (wildcardIndex > -1) {
 				// wildcard found
@@ -99,10 +100,51 @@ public class LO3PLApplication {
 
 	@PostMapping("/persoonslijsten")
 	public String storePL(@RequestBody PersoonsLijst pl) {
-		PersoonsLijstWrapper wrapper = new PersoonsLijstWrapper(UUID.randomUUID().toString(), null);
-		wrapper.setPl(pl);
+		PersoonsLijstWrapper saved;
 
-		PersoonsLijstWrapper saved = plRepo.save(wrapper);
+		// Check if the A nummer already exists
+		// If yes, only store the PL if it's about the same person and re-use the PL id
+		if (!pl.isValid()) {
+			throw new PLException("Nieuwe PL niet valide");
+		}
+		long anummer = pl.getPersoon().get(0).getAnummer();
+		Iterator<PersoonsLijstWrapper> it = plRepo.findByAnummer(anummer).iterator();
+		if (it.hasNext()) {
+			// Er betaat al een PL met dit A nummer. Is het dezelfde persoon
+			PersoonsLijstWrapper w = it.next();
+
+			// Check if we find another PL with the same A nummer
+			if (it.hasNext()) {
+				throw new PLException("Meer dan 1 bestaande PL voor A nummer " + anummer + " gevonden");
+			}
+
+			ObjectMapper objectMapper = new ObjectMapper();
+
+			try {
+				PersoonsLijst existingPl = objectMapper.readValue(w.getPl(), PersoonsLijst.class);
+				if (!existingPl.isValid()) {
+					throw new PLException("Bestaande PL voor A nummer " + anummer + " niet valide");
+				}
+				if (!existingPl.getPersoon().get(0).getNaam().getGeslachtsnaam()
+						.equals(pl.getPersoon().get(0).getNaam().getGeslachtsnaam())) {
+					throw new PLException("Geslachtsnaam op bestaande PL ("
+							+ existingPl.getPersoon().get(0).getNaam().getGeslachtsnaam()
+							+ ") niet gelijk aan die op nieuwe PL ("
+							+ pl.getPersoon().get(0).getNaam().getGeslachtsnaam() + ")");
+				}
+			} catch (JsonProcessingException e) {
+				throw new PLException("Bestaande PL voor A nummer " + anummer + " is geen valide JSON");
+			}
+			// Overschrijf de bestaande PL
+			PersoonsLijstWrapper wrapper = new PersoonsLijstWrapper(w.getId(), null);
+			wrapper.setPl(pl);
+			saved = plRepo.save(wrapper);
+		} else {
+			// New PL
+			PersoonsLijstWrapper wrapper = new PersoonsLijstWrapper(UUID.randomUUID().toString(), null);
+			wrapper.setPl(pl);
+			saved = plRepo.save(wrapper);
+		}
 		return saved.getId();
 	}
 
