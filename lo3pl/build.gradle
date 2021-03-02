@@ -19,7 +19,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.data:spring-data-cassandra'
-	implementation files('../pl/build/libs/pl-0.0.1-SNAPSHOT.jar')
+	implementation project(':pl')
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
