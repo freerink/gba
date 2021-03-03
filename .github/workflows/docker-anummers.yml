@@ -43,7 +43,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./anummers
-          file: ./Dockerfile
+          file: ./anummers/Dockerfile
+          build-args: JAR_FILE=build/libs/anummers-0.0.1-SNAPSHOT.jar
           push: true
           tags: freerink/anummers:latest
           
