@@ -19,3 +19,4 @@ rootProject.name = 'gba'
 include('pl')
 include('lo3pl')
 include('anummers')
+include('bag')
