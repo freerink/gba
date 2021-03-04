@@ -24,3 +24,7 @@ hs_err_pid*
 
 .gradle
 !gradle/wrapper/gradle-wrapper.jar
+.project
+.settings
+docs/BAGNLDL-08022021
+docs/gemeente-lvc.html
