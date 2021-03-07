@@ -37,8 +37,61 @@ public class LoaderApplication implements CommandLineRunner {
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
 		DefaultHandler handler = new DefaultHandler() {
+
+			boolean hasEindDatum = false;
+			boolean isWoonplaats = false;
+			boolean isGemeente = false;
+			boolean isId = false;
+
+			int woonplaats, gemeente;
+
 			public void startElement(String uri, String localName, String qName, Attributes attributes) {
-				LOG.info("Start element: " + qName);
+				if (qName.endsWith("begindatumTijdvakGeldigheid")) {
+					hasEindDatum = false;
+				}
+				if (qName.endsWith("einddatumTijdvakGeldigheid")) {
+					hasEindDatum = true;
+				}
+				if (qName.endsWith("gerelateerdeWoonplaats")) {
+					isWoonplaats = true;
+				}
+				if (qName.endsWith("gerelateerdeGemeente")) {
+					isGemeente = true;
+				}
+				if (qName.endsWith("identificatie")) {
+					isId = true;
+				}
+			}
+
+			public void endElement(String uri, String localName, String qName) {
+				if (qName.endsWith("gerelateerdeWoonplaats")) {
+					isWoonplaats = false;
+				}
+				if (qName.endsWith("gerelateerdeGemeente")) {
+					isGemeente = false;
+				}
+				if (qName.endsWith("identificatie")) {
+					isId = false;
+				}
+				if (qName.endsWith("GemeenteWoonplaatsRelatie")) {
+					if (!hasEindDatum) {
+						// We hebben alles, nu opslaan
+						LOG.info("Store relation: gemeente=" + gemeente + ", woonplaats=" + woonplaats);
+					}
+				}
+			}
+
+			public void characters(char ch[], int start, int length) {
+				if (isId) {
+					if (isWoonplaats) {
+						String id = new String(ch, start, length);
+						woonplaats = Integer.parseInt(id);
+					}
+					if (isGemeente) {
+						String id = new String(ch, start, length);
+						gemeente = Integer.parseInt(id);
+					}
+				}
 			}
 		};
 
