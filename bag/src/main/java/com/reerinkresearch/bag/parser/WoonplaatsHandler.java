@@ -9,6 +9,16 @@ import com.reerinkresearch.bag.service.GemeenteWoonplaatsService;
 
 public class WoonplaatsHandler extends DefaultHandler {
 
+	private static final String OBJECTEN_WOONPLAATS = "Objecten:Woonplaats";
+
+	private static final String HISTORIE_EIND_GELDIGHEID = "Historie:eindGeldigheid";
+
+	private static final String HISTORIE_VOORKOMEN = "Historie:Voorkomen";
+
+	private static final String OBJECTEN_NAAM = "Objecten:naam";
+
+	private static final String OBJECTEN_IDENTIFICATIE = "Objecten:identificatie";
+
 	private static Logger LOG = LoggerFactory.getLogger(WoonplaatsHandler.class);
 
 	GemeenteWoonplaatsService service;
@@ -27,29 +37,29 @@ public class WoonplaatsHandler extends DefaultHandler {
 
 	public void startElement(String uri, String localName, String qName, Attributes attributes) {
 		LOG.debug("startElement: " + qName);
-		if (qName.endsWith("Objecten:identificatie")) {
+		if (qName.endsWith(OBJECTEN_IDENTIFICATIE)) {
 			isId = true;
 		}
-		if (qName.endsWith("Objecten:naam")) {
+		if (qName.endsWith(OBJECTEN_NAAM)) {
 			isWoonplaatsnaam = true;
 		}
-		if (qName.endsWith("Historie:Voorkomen")) {
+		if (qName.endsWith(HISTORIE_VOORKOMEN)) {
 			hasEindDatum = false;
 		}
-		if (qName.endsWith("Historie:eindGeldigheid")) {
+		if (qName.endsWith(HISTORIE_EIND_GELDIGHEID)) {
 			hasEindDatum = true;
 		}
 	}
 
 	public void endElement(String uri, String localName, String qName) {
-		if (qName.endsWith("Objecten:identificatie")) {
+		if (qName.endsWith(OBJECTEN_IDENTIFICATIE)) {
 			isId = false;
 		}
-		if (qName.endsWith("Objecten:naam")) {
+		if (qName.endsWith(OBJECTEN_NAAM)) {
 			isWoonplaatsnaam = false;
 			woonplaatsNaamCount = 0;
 		}
-		if (qName.endsWith("Objecten:Woonplaats") && !hasEindDatum) {
+		if (qName.endsWith(OBJECTEN_WOONPLAATS) && !hasEindDatum) {
 			// We have all data, find the woonplaats an update it
 			LOG.info("Update woonplaats: " + woonplaatsCode + " with name: " + woonplaatsNaam);
 			if (!this.service.updateWoonplaats(woonplaatsCode, woonplaatsNaam)) {
