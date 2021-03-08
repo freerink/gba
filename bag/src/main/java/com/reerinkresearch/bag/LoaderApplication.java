@@ -1,5 +1,13 @@
 package com.reerinkresearch.bag;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -12,8 +20,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.reerinkresearch.bag.parser.GemeenteWoonplaatsRelationHandler;
+import com.reerinkresearch.bag.parser.OpenbareRuimteHandler;
 import com.reerinkresearch.bag.parser.WoonplaatsHandler;
 import com.reerinkresearch.bag.service.GemeenteWoonplaatsService;
+import com.reerinkresearch.bag.service.OpenbareRuimteService;
 
 @SpringBootApplication
 public class LoaderApplication implements CommandLineRunner {
@@ -23,11 +33,17 @@ public class LoaderApplication implements CommandLineRunner {
 	@Autowired
 	GemeenteWoonplaatsService gemeenteWoonplaatsService;
 
+	@Autowired
+	OpenbareRuimteService openbareRuimteService;
+
 	@Value("${gemeenteWoonplaatsRelationsFile}")
 	private String gemeenteWoonplaatsRelationsFile;
 
 	@Value("${woonplaatsFile}")
 	private String woonplaatsFile;
+
+	@Value("${openbareRuimteFolder}")
+	private String openbareRuimteFolder;
 
 	public static void main(String[] args) {
 		LOG.info("Starting the LoaderApplication");
@@ -55,6 +71,15 @@ public class LoaderApplication implements CommandLineRunner {
 		WoonplaatsHandler woonplaatsHandler = new WoonplaatsHandler(this.gemeenteWoonplaatsService);
 		saxParser.parse(this.woonplaatsFile, woonplaatsHandler);
 
+		// Read Openbare Ruimte from all files in the folder
+		Set<String> files = getFiles(this.openbareRuimteFolder);
+		for (String file : files) {
+			LOG.info("Openbare Ruimte file: " + file);
+			OpenbareRuimteHandler oprHandler = new OpenbareRuimteHandler(this.gemeenteWoonplaatsService,
+					this.openbareRuimteService);
+			saxParser.parse(this.openbareRuimteFolder + "/" + file, oprHandler);
+		}
+
 		// Show a summary of what has been read
 		LOG.info("Aantal gemeenten: " + this.gemeenteWoonplaatsService.getGemeenteCount());
 		LOG.info("Aantal woonplaatsen: " + this.gemeenteWoonplaatsService.getWoonplaatsCount());
@@ -64,6 +89,14 @@ public class LoaderApplication implements CommandLineRunner {
 		woonplaatsCode = 3630;
 		LOG.info("Naam woonplaats " + woonplaatsCode + ": "
 				+ this.gemeenteWoonplaatsService.getWoonplaats(woonplaatsCode).getNaam());
+		LOG.info("Aantal straten: " + this.openbareRuimteService.getCount());
 	}
-	
+
+	Set<String> getFiles(String dir) throws IOException {
+		try (Stream<Path> stream = Files.list(Paths.get(openbareRuimteFolder))) {
+			return stream.filter(file -> !Files.isDirectory(file)).map(Path::getFileName).map(Path::toString)
+					.collect(Collectors.toSet());
+		}
+	}
+
 }
