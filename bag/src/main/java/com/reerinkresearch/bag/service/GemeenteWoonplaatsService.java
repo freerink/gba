@@ -6,21 +6,31 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.reerinkresearch.bag.model.Woonplaats;
+
 @Service
 public class GemeenteWoonplaatsService {
-	// Store gemeente - woonplaatsen
+	// To store gemeenteCode - woonplaatsCodes
 	private HashMap<Integer, List<Integer>> gemeenteWoonplaats = new HashMap<Integer, List<Integer>>();
 
-	// Store woonplaats - gemeente
-	private HashMap<Integer, Integer> woonplaatsGemeente = new HashMap<Integer, Integer>();
+	// To store woonplaatsCode - Woonplaats (woonplaatsCode, naam, gemeente)
+	private HashMap<Integer, Woonplaats> woonplaatsGemeente = new HashMap<Integer, Woonplaats>();
 
 	public Integer getGemeente(int woonplaats) {
+		Woonplaats w = getWoonplaats(woonplaats);
+		if (w != null) {
+			return w.getGemeenteCode();
+		}
+		return null;
+	}
+
+	public Woonplaats getWoonplaats(int woonplaats) {
 		if (this.woonplaatsGemeente.containsKey(woonplaats)) {
 			return this.woonplaatsGemeente.get(woonplaats);
 		}
 		return null;
 	}
-
+	
 	public List<Integer> getWoonplaatsen(int gemeente) {
 		return this.gemeenteWoonplaats.get(gemeente);
 	}
@@ -47,7 +57,7 @@ public class GemeenteWoonplaatsService {
 			this.gemeenteWoonplaats.put(gemeente, woonplaatsen);
 		}
 		// woonplaatsGemeente
-		this.woonplaatsGemeente.put(woonplaats, gemeente);
+		this.woonplaatsGemeente.put(woonplaats, new Woonplaats(woonplaats, gemeente));
 		return true;
 	}
 	
@@ -57,5 +67,14 @@ public class GemeenteWoonplaatsService {
 	
 	public int getWoonplaatsCount() {
 		return this.woonplaatsGemeente.size();
+	}
+
+	public boolean updateWoonplaats(int woonplaatsCode, String woonplaatsNaam) {
+		Woonplaats w = getWoonplaats(woonplaatsCode);
+		if( w == null) {
+			return false;
+		}
+		w.setNaam(woonplaatsNaam);
+		return true;
 	}
 }
