@@ -85,7 +85,7 @@ public class OpenbareRuimteHandler extends DefaultHandler {
 			isNaam = false;
 		}
 		if (qName.equals(SL_STAND_BESTAND)) {
-			LOG.info("Number of OPR: " + numOpenbareRuimten);
+			LOG.debug("Number of OPR: " + numOpenbareRuimten);
 		}
 		if (qName.equals(OBJECTEN_OPENBARE_RUIMTE) && !hasEndDate) {
 			// We have all data

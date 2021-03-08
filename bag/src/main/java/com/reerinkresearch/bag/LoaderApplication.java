@@ -20,9 +20,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.reerinkresearch.bag.parser.GemeenteWoonplaatsRelationHandler;
+import com.reerinkresearch.bag.parser.NummerAanduidingHandler;
 import com.reerinkresearch.bag.parser.OpenbareRuimteHandler;
 import com.reerinkresearch.bag.parser.WoonplaatsHandler;
 import com.reerinkresearch.bag.service.GemeenteWoonplaatsService;
+import com.reerinkresearch.bag.service.NummerAanduidingService;
 import com.reerinkresearch.bag.service.OpenbareRuimteService;
 
 @SpringBootApplication
@@ -36,6 +38,9 @@ public class LoaderApplication implements CommandLineRunner {
 	@Autowired
 	OpenbareRuimteService openbareRuimteService;
 
+	@Autowired
+	NummerAanduidingService nummerAanduidingService;
+
 	@Value("${gemeenteWoonplaatsRelationsFile}")
 	private String gemeenteWoonplaatsRelationsFile;
 
@@ -44,6 +49,9 @@ public class LoaderApplication implements CommandLineRunner {
 
 	@Value("${openbareRuimteFolder}")
 	private String openbareRuimteFolder;
+
+	@Value("${nummerAanduidingFolder}")
+	private String nummerAanduidingFolder;
 
 	public static void main(String[] args) {
 		LOG.info("Starting the LoaderApplication");
@@ -71,13 +79,21 @@ public class LoaderApplication implements CommandLineRunner {
 		WoonplaatsHandler woonplaatsHandler = new WoonplaatsHandler(this.gemeenteWoonplaatsService);
 		saxParser.parse(this.woonplaatsFile, woonplaatsHandler);
 
-		// Read Openbare Ruimte from all files in the folder
-		Set<String> files = getFiles(this.openbareRuimteFolder);
-		for (String file : files) {
-			LOG.info("Openbare Ruimte file: " + file);
+		// Read Openbare Ruimten from all files in the folder
+		Set<String> obrFiles = getFiles(this.openbareRuimteFolder);
+		for (String file : obrFiles) {
+			LOG.debug("Openbare Ruimte file: " + file);
 			OpenbareRuimteHandler oprHandler = new OpenbareRuimteHandler(this.gemeenteWoonplaatsService,
 					this.openbareRuimteService);
 			saxParser.parse(this.openbareRuimteFolder + "/" + file, oprHandler);
+		}
+
+		// Read Nummer Aanduidingen from all files in the folder
+		Set<String> numFiles = getFiles(this.nummerAanduidingFolder);
+		for (String file : numFiles) {
+			LOG.info("Nummer Aanduiding file: " + file);
+			NummerAanduidingHandler numHandler = new NummerAanduidingHandler(this.nummerAanduidingService);
+			saxParser.parse(this.nummerAanduidingFolder + "/" + file, numHandler);
 		}
 
 		// Show a summary of what has been read
@@ -90,10 +106,11 @@ public class LoaderApplication implements CommandLineRunner {
 		LOG.info("Naam woonplaats " + woonplaatsCode + ": "
 				+ this.gemeenteWoonplaatsService.getWoonplaats(woonplaatsCode).getNaam());
 		LOG.info("Aantal straten: " + this.openbareRuimteService.getCount());
+		LOG.info("Aantal addressen: " + this.nummerAanduidingService.getCount());
 	}
 
 	Set<String> getFiles(String dir) throws IOException {
-		try (Stream<Path> stream = Files.list(Paths.get(openbareRuimteFolder))) {
+		try (Stream<Path> stream = Files.list(Paths.get(dir))) {
 			return stream.filter(file -> !Files.isDirectory(file)).map(Path::getFileName).map(Path::toString)
 					.collect(Collectors.toSet());
 		}
