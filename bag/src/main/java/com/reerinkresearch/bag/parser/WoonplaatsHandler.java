@@ -37,29 +37,29 @@ public class WoonplaatsHandler extends DefaultHandler {
 
 	public void startElement(String uri, String localName, String qName, Attributes attributes) {
 		LOG.debug("startElement: " + qName);
-		if (qName.endsWith(OBJECTEN_IDENTIFICATIE)) {
+		if (qName.equals(OBJECTEN_IDENTIFICATIE)) {
 			isId = true;
 		}
-		if (qName.endsWith(OBJECTEN_NAAM)) {
+		if (qName.equals(OBJECTEN_NAAM)) {
 			isWoonplaatsnaam = true;
 		}
-		if (qName.endsWith(HISTORIE_VOORKOMEN)) {
+		if (qName.equals(HISTORIE_VOORKOMEN)) {
 			hasEindDatum = false;
 		}
-		if (qName.endsWith(HISTORIE_EIND_GELDIGHEID)) {
+		if (qName.equals(HISTORIE_EIND_GELDIGHEID)) {
 			hasEindDatum = true;
 		}
 	}
 
 	public void endElement(String uri, String localName, String qName) {
-		if (qName.endsWith(OBJECTEN_IDENTIFICATIE)) {
+		if (qName.equals(OBJECTEN_IDENTIFICATIE)) {
 			isId = false;
 		}
-		if (qName.endsWith(OBJECTEN_NAAM)) {
+		if (qName.equals(OBJECTEN_NAAM)) {
 			isWoonplaatsnaam = false;
 			woonplaatsNaamCount = 0;
 		}
-		if (qName.endsWith(OBJECTEN_WOONPLAATS) && !hasEindDatum) {
+		if (qName.equals(OBJECTEN_WOONPLAATS) && !hasEindDatum) {
 			// We have all data, find the woonplaats an update it
 			LOG.info("Update woonplaats: " + woonplaatsCode + " with name: " + woonplaatsNaam);
 			if (!this.service.updateWoonplaats(woonplaatsCode, woonplaatsNaam)) {

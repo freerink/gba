@@ -10,6 +10,18 @@ import com.reerinkresearch.bag.service.GemeenteWoonplaatsService;
 
 public class GemeenteWoonplaatsRelationHandler extends DefaultHandler {
 
+	private static final String GWR_PRODUCT_GEMEENTE_WOONPLAATS_RELATIE = "gwr-product:GemeenteWoonplaatsRelatie";
+
+	private static final String GWR_PRODUCT_IDENTIFICATIE = "gwr-product:identificatie";
+
+	private static final String GWR_PRODUCT_GERELATEERDE_GEMEENTE = "gwr-product:gerelateerdeGemeente";
+
+	private static final String GWR_PRODUCT_GERELATEERDE_WOONPLAATS = "gwr-product:gerelateerdeWoonplaats";
+
+	private static final String BAGTYPES_EINDDATUM_TIJDVAK_GELDIGHEID = "bagtypes:einddatumTijdvakGeldigheid";
+
+	private static final String BAGTYPES_BEGINDATUM_TIJDVAK_GELDIGHEID = "bagtypes:begindatumTijdvakGeldigheid";
+
 	private static Logger LOG = LoggerFactory.getLogger(GemeenteWoonplaatsRelationHandler.class);
 
 	GemeenteWoonplaatsService service;
@@ -26,34 +38,34 @@ public class GemeenteWoonplaatsRelationHandler extends DefaultHandler {
 	}
 	
 	public void startElement(String uri, String localName, String qName, Attributes attributes) {
-		if (qName.endsWith("begindatumTijdvakGeldigheid")) {
+		if (qName.equals(BAGTYPES_BEGINDATUM_TIJDVAK_GELDIGHEID)) {
 			hasEindDatum = false;
 		}
-		if (qName.endsWith("einddatumTijdvakGeldigheid")) {
+		if (qName.equals(BAGTYPES_EINDDATUM_TIJDVAK_GELDIGHEID)) {
 			hasEindDatum = true;
 		}
-		if (qName.endsWith("gerelateerdeWoonplaats")) {
+		if (qName.equals(GWR_PRODUCT_GERELATEERDE_WOONPLAATS)) {
 			isWoonplaats = true;
 		}
-		if (qName.endsWith("gerelateerdeGemeente")) {
+		if (qName.equals(GWR_PRODUCT_GERELATEERDE_GEMEENTE)) {
 			isGemeente = true;
 		}
-		if (qName.endsWith("identificatie")) {
+		if (qName.equals(GWR_PRODUCT_IDENTIFICATIE)) {
 			isId = true;
 		}
 	}
 
 	public void endElement(String uri, String localName, String qName) {
-		if (qName.endsWith("gerelateerdeWoonplaats")) {
+		if (qName.equals(GWR_PRODUCT_GERELATEERDE_WOONPLAATS)) {
 			isWoonplaats = false;
 		}
-		if (qName.endsWith("gerelateerdeGemeente")) {
+		if (qName.equals(GWR_PRODUCT_GERELATEERDE_GEMEENTE)) {
 			isGemeente = false;
 		}
-		if (qName.endsWith("identificatie")) {
+		if (qName.equals(GWR_PRODUCT_IDENTIFICATIE)) {
 			isId = false;
 		}
-		if (qName.endsWith("GemeenteWoonplaatsRelatie")) {
+		if (qName.equals(GWR_PRODUCT_GEMEENTE_WOONPLAATS_RELATIE)) {
 			if (!hasEindDatum) {
 				// We hebben alles, nu opslaan
 				LOG.debug("Store relation: gemeente=" + gemeente + ", woonplaats=" + woonplaats);
