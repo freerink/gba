@@ -12,7 +12,6 @@ public class GemeenteWoonplaatsRelationHandler extends DefaultHandler {
 
 	private static Logger LOG = LoggerFactory.getLogger(GemeenteWoonplaatsRelationHandler.class);
 
-	//@Autowired
 	GemeenteWoonplaatsService service;
 
 	boolean hasEindDatum = false;
@@ -58,7 +57,9 @@ public class GemeenteWoonplaatsRelationHandler extends DefaultHandler {
 			if (!hasEindDatum) {
 				// We hebben alles, nu opslaan
 				LOG.debug("Store relation: gemeente=" + gemeente + ", woonplaats=" + woonplaats);
-				this.service.store(gemeente, woonplaats);
+				if( !this.service.store(gemeente, woonplaats)) {
+					LOG.error("Error storing relation: gemeente=" + gemeente + ", woonplaats=" + woonplaats);
+				}
 			}
 		}
 	}

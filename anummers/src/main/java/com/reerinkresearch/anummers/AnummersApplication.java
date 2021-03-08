@@ -86,11 +86,6 @@ public class AnummersApplication {
 		return (int) ((rand * rand * (max + 1 - min)) + min);
 	}
 
-	private long getRandomNumber(long min, long max) {
-		double rand = Math.random();
-		return (long) ((rand * (max + 1 - min)) + min);
-	}
-
 	@GetMapping("/randoms")
 	public int[] getRandomFrequencies(@RequestParam(value = "iterations", required = false) Integer iterations,
 			@RequestParam(value = "min", required = false) Integer min,
