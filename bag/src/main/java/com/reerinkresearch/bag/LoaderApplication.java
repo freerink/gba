@@ -18,7 +18,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.reerinkresearch.bag.model.Adres;
+import com.reerinkresearch.bag.model.Summary;
 import com.reerinkresearch.bag.parser.GemeenteWoonplaatsRelationHandler;
 import com.reerinkresearch.bag.parser.NummerAanduidingHandler;
 import com.reerinkresearch.bag.parser.OpenbareRuimteHandler;
@@ -28,6 +32,7 @@ import com.reerinkresearch.bag.service.NummerAanduidingService;
 import com.reerinkresearch.bag.service.OpenbareRuimteService;
 
 @SpringBootApplication
+@RestController
 public class LoaderApplication implements CommandLineRunner {
 
 	private static Logger LOG = LoggerFactory.getLogger(LoaderApplication.class);
@@ -52,6 +57,44 @@ public class LoaderApplication implements CommandLineRunner {
 
 	@Value("${nummerAanduidingFolder}")
 	private String nummerAanduidingFolder;
+
+	@GetMapping("/summary")
+	public Summary getSummary() {
+		Summary s = new Summary();
+
+		s.setNumGemeenten(this.gemeenteWoonplaatsService.getGemeenteCount());
+		s.setNumWoonplaatsen(this.gemeenteWoonplaatsService.getWoonplaatsCount());
+		s.setNumStraten(this.openbareRuimteService.getCount());
+		s.setNumAdressen(this.nummerAanduidingService.getCount());
+
+		return s;
+	}
+
+	private int getRandomNumber(int min, int max) {
+		double rand = Math.random();
+		return (int) ((rand * (max + 1 - min)) + min);
+	}
+
+	@GetMapping("/address")
+	public Adres getRandomAddress() {
+		Adres a = new Adres();
+		
+		int num = this.nummerAanduidingService.getCount();
+		int rand = getRandomNumber(0, num - 1);
+
+		var n = this.nummerAanduidingService.get(rand);
+		var o = this.openbareRuimteService.getOpenbareRuimte(n.getOpenbareRuimteCode());
+		var w = this.gemeenteWoonplaatsService.getWoonplaats(o.getWoonplaatsCode());
+		
+		a.setStraat(o.getNaam());
+		a.setHuisNummer(n.getHuisNummer());
+		a.setHuisLetter(n.getHuisLetter());
+		a.setPostCode(n.getPostCode());
+		a.setWoonplaats(w.getNaam());
+		a.setGemeenteCode(w.getGemeenteCode());
+		
+		return a;
+	}
 
 	public static void main(String[] args) {
 		LOG.info("Starting the LoaderApplication");
