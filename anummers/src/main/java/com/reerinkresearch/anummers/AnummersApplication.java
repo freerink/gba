@@ -10,16 +10,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.reerinkresearch.anummers.model.Name;
+import com.reerinkresearch.anummers.repo.AddressRepository;
 import com.reerinkresearch.anummers.repo.AnummerRepository;
 import com.reerinkresearch.anummers.repo.NameRepository;
+import com.reerinkresearch.bag.model.Adres;
 import com.reerinkresearch.pl.PersoonsLijst;
 
 @SpringBootApplication
@@ -33,7 +38,10 @@ public class AnummersApplication {
 
 	@Autowired
 	NameRepository nameRepo;
-
+	
+	@Autowired
+	AddressRepository addressRepo;
+	
 	@GetMapping("/names")
 	public List<Name> getNames(@RequestParam(value = "id", required = false) Integer id,
 			@RequestParam(value = "count", required = false) Boolean isCount) {
@@ -210,16 +218,20 @@ public class AnummersApplication {
 
 	@PostMapping("/generatePersoonslijst")
 	public PersoonsLijst generatePLAndStoreAnummer() {
+		// Haal een random adres op en gebruik de bijbehorende gemeente code
+		Adres addr = this.addressRepo.getRandomAddress();
+		LOG.info("Random address gemeenteCode: " + addr.getGemeenteCode());
+		
 		// Gemeente code bepalen (random tussen 1 en 200 incl.)
-		int gemeenteCode = getRandomNumber(1, 200);
+		//int gemeenteCode = getRandomNumber(1, 200);
 
-		// Eerst beschikbare A nummer ophalen voor gemeente code
+		// Eerst beschikbare A nummer ophalen
 		Anummer a = this.getAnummer(null, null, null, true);
 		if (!a.isValid()) {
 			throw new InvalidAnummerException(a);
 		}
 		// Store the A nummer for this gemeente
-		a.setGemeenteCode(gemeenteCode);
+		a.setGemeenteCode(addr.getGemeenteCode());
 		this.storeAnummer(a);
 
 		// Namen ophalen: voornamen 1-4, voorvoegsel 0-2, geslachtsnaam 1-3
@@ -228,7 +240,7 @@ public class AnummersApplication {
 		String voorvoegsel = this.generateVoorvoegsel(0, 2);
 
 		// PL genereren
-		PersoonsLijst pl = new PersoonsLijst(a.getAnummer(), geslachtsnaam, gemeenteCode);
+		PersoonsLijst pl = new PersoonsLijst(a.getAnummer(), geslachtsnaam, addr.getGemeenteCode());
 		pl.getPersoon().get(0).getNaam().setVoornamen(voornamen);
 		pl.getPersoon().get(0).getNaam().setVoorvoegsel(voorvoegsel);
 		return pl;
@@ -258,6 +270,11 @@ public class AnummersApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(AnummersApplication.class, args);
+	}
+
+	@Bean
+	public RestTemplate restTemplate(RestTemplateBuilder builder) {
+		return builder.build();
 	}
 
 }
