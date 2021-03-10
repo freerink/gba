@@ -19,9 +19,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.reerinkresearch.bag.model.Adres;
+import com.reerinkresearch.bag.model.OpenbareRuimte;
 import com.reerinkresearch.bag.model.Summary;
 import com.reerinkresearch.bag.parser.GemeenteWoonplaatsRelationHandler;
 import com.reerinkresearch.bag.parser.NummerAanduidingHandler;
@@ -78,22 +80,27 @@ public class LoaderApplication implements CommandLineRunner {
 	@GetMapping("/address")
 	public Adres getRandomAddress() {
 		Adres a = new Adres();
-		
+
 		int num = this.nummerAanduidingService.getCount();
 		int rand = getRandomNumber(0, num - 1);
 
 		var n = this.nummerAanduidingService.get(rand);
-		var o = this.openbareRuimteService.getOpenbareRuimte(n.getOpenbareRuimteCode());
+		OpenbareRuimte o = this.openbareRuimteService.getOpenbareRuimte(n.getOpenbareRuimteCode());
 		var w = this.gemeenteWoonplaatsService.getWoonplaats(o.getWoonplaatsCode());
-		
+
 		a.setStraat(o.getNaam());
 		a.setHuisNummer(n.getHuisNummer());
 		a.setHuisLetter(n.getHuisLetter());
 		a.setPostCode(n.getPostCode());
 		a.setWoonplaats(w.getNaam());
 		a.setGemeenteCode(w.getGemeenteCode());
-		
+
 		return a;
+	}
+
+	@GetMapping("/openbareruimte")
+	public OpenbareRuimte getStreet(@RequestParam(required = true) long id) {
+		return this.openbareRuimteService.getOpenbareRuimte(id);
 	}
 
 	public static void main(String[] args) {
@@ -150,6 +157,8 @@ public class LoaderApplication implements CommandLineRunner {
 				+ this.gemeenteWoonplaatsService.getWoonplaats(woonplaatsCode).getNaam());
 		LOG.info("Aantal straten: " + this.openbareRuimteService.getCount());
 		LOG.info("Aantal addressen: " + this.nummerAanduidingService.getCount());
+		long oId = 855300000002659L;
+		LOG.info("Naam OPR: " + oId + "=" + this.openbareRuimteService.getOpenbareRuimte(oId).getNaam());
 	}
 
 	Set<String> getFiles(String dir) throws IOException {
