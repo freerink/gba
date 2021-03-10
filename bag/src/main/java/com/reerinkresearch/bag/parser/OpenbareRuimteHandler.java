@@ -27,6 +27,7 @@ public class OpenbareRuimteHandler extends DefaultHandler {
 	boolean isLigtIn = false;
 	boolean isWoonplaatsRef = false;
 	boolean hasEndDate = false;
+	int naamPartCount = 0;
 	int numWoonplaatsRefs = 0;
 	int numOpenbareRuimten = 0;
 	long openbareRuimteId;
@@ -83,6 +84,7 @@ public class OpenbareRuimteHandler extends DefaultHandler {
 		}
 		if (qName.equals(OBJECTEN_NAAM)) {
 			isNaam = false;
+			naamPartCount = 0;
 		}
 		if (qName.equals(SL_STAND_BESTAND)) {
 			LOG.debug("Number of OPR: " + numOpenbareRuimten);
@@ -93,8 +95,9 @@ public class OpenbareRuimteHandler extends DefaultHandler {
 			Woonplaats w = this.gemeenteWoonplaatsService.getWoonplaats(woonplaatsRef);
 			LOG.debug("Woonplaats: " + w.getNaam() + ", OPR id: " + openbareRuimteId + ", name: " + openbareRuimteName);
 			OpenbareRuimte opr = new OpenbareRuimte(openbareRuimteId, woonplaatsRef, openbareRuimteName);
-			if(!this.openbareRuimteService.store(opr)) {
-				LOG.error("Error storing Woonplaats: " + w.getNaam() + ", OPR id: " + openbareRuimteId + ", name: " + openbareRuimteName);
+			if (!this.openbareRuimteService.store(opr)) {
+				LOG.error("Error storing Woonplaats: " + w.getNaam() + ", OPR id: " + openbareRuimteId + ", name: "
+						+ openbareRuimteName);
 			}
 		}
 	}
@@ -105,7 +108,14 @@ public class OpenbareRuimteHandler extends DefaultHandler {
 			openbareRuimteId = Long.parseLong(raw);
 		}
 		if (isNaam) {
-			openbareRuimteName = raw;
+			if (naamPartCount == 0) {
+				openbareRuimteName = raw;
+			} else {
+				openbareRuimteName += raw;
+				LOG.info("characters for openbareRuimte: " + openbareRuimteId + ", ch[0]:" + (int) ch[start]
+						+ ", start: " + start + ", len: " + length);
+			}
+			naamPartCount++;
 		}
 		if (isWoonplaatsRef) {
 			woonplaatsRef = Integer.parseInt(raw);
