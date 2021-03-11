@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
 
-import com.reerinkresearch.bag.model.Adres;
+import com.reerinkresearch.pl.Adres;
 
 @Repository
 public class AddressRepository {

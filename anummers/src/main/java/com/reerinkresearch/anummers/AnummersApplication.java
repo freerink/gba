@@ -24,7 +24,7 @@ import com.reerinkresearch.anummers.model.Name;
 import com.reerinkresearch.anummers.repo.AddressRepository;
 import com.reerinkresearch.anummers.repo.AnummerRepository;
 import com.reerinkresearch.anummers.repo.NameRepository;
-import com.reerinkresearch.bag.model.Adres;
+import com.reerinkresearch.pl.Adres;
 import com.reerinkresearch.pl.PersoonsLijst;
 
 @SpringBootApplication
