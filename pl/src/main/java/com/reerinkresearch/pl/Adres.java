@@ -1,4 +1,4 @@
-package com.reerinkresearch.bag.model;
+package com.reerinkresearch.pl;
 
 public class Adres {
 	private String straat;

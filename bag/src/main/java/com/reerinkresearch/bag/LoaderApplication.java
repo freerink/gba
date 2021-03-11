@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.reerinkresearch.bag.model.Adres;
+import com.reerinkresearch.pl.Adres;
 import com.reerinkresearch.bag.model.OpenbareRuimte;
 import com.reerinkresearch.bag.model.Summary;
 import com.reerinkresearch.bag.parser.GemeenteWoonplaatsRelationHandler;
