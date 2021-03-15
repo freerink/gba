@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: bag
+  name: bag
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bag
+  template:
+    metadata:
+      labels:
+        app: bag
+    spec:
+      containers:
+      - image: freerink/bag
+        name: bag
+        ports:
+          - containerPort: 8080
+            protocol: TCP
+        volumeMounts:
+        - name: bag-storage
+          mountPath: /mnt
+      volumes:
+      - name: bag-storage
+        persistentVolumeClaim:
+          claimName: pvc-bag
+            

@@ -4,6 +4,7 @@ metadata:
   labels:
     app: persoonslijsten
   name: persoonslijsten
+  namespace: default
 spec:
   replicas: 1
   selector:
