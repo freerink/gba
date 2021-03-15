@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: anummers
+  name: anummers
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: anummers
+  template:
+    metadata:
+      labels:
+        app: anummers
+    spec:
+      containers:
+      - image: freerink/anummers
+        name: anummers
+        ports:
+          - containerPort: 8080
+            protocol: TCP
