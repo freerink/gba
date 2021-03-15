@@ -19,5 +19,11 @@ spec:
     spec:
       containers:
       - image: redis
-        imagePullPolicy: Always
         name: redis
+        volumeMounts:
+        - name: redis-storage
+          mountPath: /data
+      volumes:
+      - name: redis-storage
+        persistentVolumeClaim:
+          claimName: pvc-redis
