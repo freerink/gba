@@ -25,23 +25,28 @@ import com.reerinkresearch.anummers.repo.AddressRepository;
 import com.reerinkresearch.anummers.repo.AnummerRepository;
 import com.reerinkresearch.anummers.repo.NameRepository;
 import com.reerinkresearch.pl.Adres;
+import com.reerinkresearch.pl.Datum;
+import com.reerinkresearch.pl.Geboorte;
+import com.reerinkresearch.pl.Geslacht;
 import com.reerinkresearch.pl.PersoonsLijst;
 
 @SpringBootApplication
 @RestController
 public class AnummersApplication {
 
+	private static final long ANUMMER_GENERATE_MAXITERATIONS = 100000L;
+
 	private static final Logger LOG = LoggerFactory.getLogger(AnummersApplication.class);
-	
+
 	@Autowired
 	AnummerRepository anummerRepo;
 
 	@Autowired
 	NameRepository nameRepo;
-	
+
 	@Autowired
 	AddressRepository addressRepo;
-	
+
 	@GetMapping("/names")
 	public List<Name> getNames(@RequestParam(value = "id", required = false) Integer id,
 			@RequestParam(value = "count", required = false) Boolean isCount) {
@@ -190,7 +195,7 @@ public class AnummersApplication {
 					a.getAnummer(), a.getGemeenteCode());
 			anummerRepo.save(persistedAnummer);
 		} else {
-			// Update if the persisted gemeenteCode == 0 
+			// Update if the persisted gemeenteCode == 0
 			Optional<com.reerinkresearch.anummers.model.Anummer> p = anummerRepo.findById(a.getAnummer());
 			if (p.isPresent() && p.get().getGemeenteCode() != null && p.get().getGemeenteCode() == 0) {
 				p.get().setGemeenteCode(a.getGemeenteCode());
@@ -221,12 +226,9 @@ public class AnummersApplication {
 		// Haal een random adres op en gebruik de bijbehorende gemeente code
 		Adres addr = this.addressRepo.getRandomAddress();
 		LOG.info("Random address gemeenteCode: " + addr.getGemeenteCode());
-		
-		// Gemeente code bepalen (random tussen 1 en 200 incl.)
-		//int gemeenteCode = getRandomNumber(1, 200);
 
 		// Eerst beschikbare A nummer ophalen
-		Anummer a = this.getAnummer(null, null, null, true);
+		Anummer a = this.generateAnummer();
 		if (!a.isValid()) {
 			throw new InvalidAnummerException(a);
 		}
@@ -243,7 +245,37 @@ public class AnummersApplication {
 		PersoonsLijst pl = new PersoonsLijst(a.getAnummer(), geslachtsnaam, addr.getGemeenteCode());
 		pl.getPersoon().get(0).getNaam().setVoornamen(voornamen);
 		pl.getPersoon().get(0).getNaam().setVoorvoegsel(voorvoegsel);
+		pl.getPersoon().get(0).setGeboorte(new Geboorte(new Datum("20210315"), "" + addr.getGemeenteCode(), "0000"));
+		pl.getPersoon().get(0).setGeslacht(new Geslacht(this.generateGeslacht()));
+		
+		pl.getVerblijfplaats().get(0).setAdres(addr);
 		return pl;
+	}
+
+	private Anummer generateAnummer() {
+		try {
+			Anummer a = this.getAnummer(null, null, null, true);
+			return a;
+		} catch (Exception e) {
+			LOG.warn("No available A-nummer, generate a new one");
+		}
+		boolean foundNewValidAnummer = false;
+		long anummer = 0;
+		while (!foundNewValidAnummer) {
+			Anummer a = this.getAnummer(anummer == 0 ? null : anummer, ANUMMER_GENERATE_MAXITERATIONS, null, null);
+			if (a.isValid()) {
+				// Check if it already exists
+				try {
+					// Ignore the result
+					this.getAnummer(null, null, a.getAnummer(), null);
+				} catch (Exception e) {
+					// Not found is OK, other exceptions are not :)
+					return a;
+				}
+			}
+			anummer = a.getSkipTo();
+		}
+		return null;
 	}
 
 	private String generateVoorvoegsel(int min, int max) {
@@ -266,6 +298,13 @@ public class AnummersApplication {
 			buf.append(getRandomName() + " ");
 		}
 		return buf.toString().strip();
+	}
+	
+	private String generateGeslacht() {
+		String[] geslacht = {"M", "V", "O"};
+		int rand = this.getRandomNumber(0, geslacht.length - 1);
+		
+		return geslacht[rand];
 	}
 
 	public static void main(String[] args) {

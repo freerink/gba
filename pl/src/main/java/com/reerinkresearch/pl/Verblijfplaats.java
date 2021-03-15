@@ -6,6 +6,8 @@ import java.util.List;
 public class Verblijfplaats {
 
 	private Gemeente gemeente;
+	
+	private Adres adres;
 
 	public Verblijfplaats() {
 	}
@@ -27,6 +29,14 @@ public class Verblijfplaats {
 		
 		verblijfplaatsStapel.add(new Verblijfplaats(gemeenteCode));
 		return verblijfplaatsStapel;
+	}
+
+	public Adres getAdres() {
+		return adres;
+	}
+
+	public void setAdres(Adres adres) {
+		this.adres = adres;
 	}
 
 }

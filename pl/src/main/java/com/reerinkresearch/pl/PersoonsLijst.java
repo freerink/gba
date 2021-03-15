@@ -31,11 +31,12 @@ public class PersoonsLijst {
 		if (this.getPersoon() == null || this.getPersoon().size() == 0) {
 			return false;
 		}
-		// We need a valid A number
+		// groep 01 We need a valid A number
 		Anummer anummer = new Anummer(this.getPersoon().get(0).getAnummer());
 		if (!anummer.isValid()) {
 			return false;
 		}
+		// groep 02
 		if (this.getPersoon().get(0).getNaam() == null
 				|| this.getPersoon().get(0).getNaam().getGeslachtsnaam() == null
 				|| this.getPersoon().get(0).getNaam().getGeslachtsnaam().length() < 1) {
