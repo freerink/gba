@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: persoonslijsten
+  name: persoonslijsten
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: persoonslijsten
+  template:
+    metadata:
+      labels:
+        app: persoonslijsten
+    spec:
+      containers:
+      - image: freerink/persoonslijsten
+        name: persoonslijsten
+        ports:
+          - containerPort: 8080
+            protocol: TCP
