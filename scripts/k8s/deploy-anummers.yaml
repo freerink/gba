@@ -16,7 +16,7 @@ spec:
         app: anummers
     spec:
       containers:
-      - image: freerink/anummers
+      - image: freerink/anummers:latest
         name: anummers
         ports:
           - containerPort: 8080
