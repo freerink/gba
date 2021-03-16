@@ -1,6 +1,8 @@
 package com.reerinkresearch.anummers;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +31,7 @@ import com.reerinkresearch.pl.Datum;
 import com.reerinkresearch.pl.Geboorte;
 import com.reerinkresearch.pl.Geslacht;
 import com.reerinkresearch.pl.PersoonsLijst;
+import com.reerinkresearch.pl.util.Util;
 
 @SpringBootApplication
 @RestController
@@ -245,13 +248,28 @@ public class AnummersApplication {
 		PersoonsLijst pl = new PersoonsLijst(a.getAnummer(), geslachtsnaam, addr.getGemeenteCode());
 		pl.getPersoon().get(0).getNaam().setVoornamen(voornamen);
 		pl.getPersoon().get(0).getNaam().setVoorvoegsel(voorvoegsel);
-		pl.getPersoon().get(0).setGeboorte(new Geboorte(new Datum("20210315"), "" + addr.getGemeenteCode(), "0000"));
+		String gebDatum = this.generateGeboorteDatum();
+		pl.getPersoon().get(0).setGeboorte(
+				new Geboorte(new Datum(gebDatum), Util.zeroPrefix(addr.getGemeenteCode(), 4), Util.zeroPrefix(0, 4)));
 		pl.getPersoon().get(0).setGeslacht(new Geslacht(this.generateGeslacht()));
-		
+
 		pl.getVerblijfplaats().get(0).setAdres(addr);
 		return pl;
 	}
 
+	private String generateGeboorteDatum() {
+		int year = getRandomNumber(1970, 2020);
+		int month = getRandomNumber(1, 12);
+		int day = getRandomNumber(1, 31);
+		//Date d = new Date(year, month, day);
+		Calendar c = Calendar.getInstance();
+		c.set(year, month - 1, day);
+		
+		final SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+		
+		return format.format(c.getTime());
+	}
+	
 	private Anummer generateAnummer() {
 		try {
 			Anummer a = this.getAnummer(null, null, null, true);
@@ -299,11 +317,11 @@ public class AnummersApplication {
 		}
 		return buf.toString().strip();
 	}
-	
+
 	private String generateGeslacht() {
-		String[] geslacht = {"M", "V", "O"};
+		String[] geslacht = { "M", "V", "O" };
 		int rand = this.getRandomNumber(0, geslacht.length - 1);
-		
+
 		return geslacht[rand];
 	}
 
