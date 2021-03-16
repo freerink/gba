@@ -6,6 +6,10 @@ public class Datum {
 	
 		private String datum;
 
+		public Datum(String datum) {
+			this.datum = datum;
+		}
+
 		public String getDatum() {
 			return datum;
 		}

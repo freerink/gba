@@ -11,6 +11,10 @@ public class Persoon {
 	
 	private Naam naam;
 	
+	private Geboorte geboorte;
+	
+	private Geslacht geslacht;
+	
 	public Persoon() {	
 	}
 	
@@ -49,6 +53,22 @@ public class Persoon {
 		persoonStapel.add(new Persoon(anummer, geslachtsnaam));
 		
 		return persoonStapel;
+	}
+
+	public Geboorte getGeboorte() {
+		return geboorte;
+	}
+
+	public void setGeboorte(Geboorte geboorte) {
+		this.geboorte = geboorte;
+	}
+
+	public Geslacht getGeslacht() {
+		return geslacht;
+	}
+
+	public void setGeslacht(Geslacht geslacht) {
+		this.geslacht = geslacht;
 	}
 	
 }
