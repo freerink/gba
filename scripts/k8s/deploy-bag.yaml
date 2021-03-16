@@ -16,7 +16,7 @@ spec:
         app: bag
     spec:
       containers:
-      - image: freerink/bag
+      - image: freerink/bag:latest
         name: bag
         ports:
           - containerPort: 8080

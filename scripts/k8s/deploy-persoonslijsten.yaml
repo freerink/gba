@@ -16,7 +16,7 @@ spec:
         app: persoonslijsten
     spec:
       containers:
-      - image: freerink/persoonslijsten
+      - image: freerink/persoonslijsten:latest
         name: persoonslijsten
         ports:
           - containerPort: 8080
