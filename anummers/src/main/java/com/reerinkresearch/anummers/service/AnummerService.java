@@ -3,17 +3,23 @@ package com.reerinkresearch.anummers.service;
 import java.util.Iterator;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.reerinkresearch.anummers.AlreadyExistsException;
-import com.reerinkresearch.anummers.model.FreeAnummer;
 import com.reerinkresearch.anummers.model.AllocatedAnummer;
+import com.reerinkresearch.anummers.model.FreeAnummer;
 import com.reerinkresearch.anummers.repo.AnummerRepository;
 import com.reerinkresearch.anummers.repo.FreeAnummerRepository;
 
 @Service
 public class AnummerService {
+
+	private static final Logger LOG = LoggerFactory.getLogger(AnummerService.class);
 
 	@Autowired
 	AnummerRepository anummerRepo;
@@ -57,28 +63,40 @@ public class AnummerService {
 	 *         the pool.
 	 */
 	public long popUnallocatedAnummer() {
-		Iterator<FreeAnummer> all = this.freeAnummerRepo.findAll().iterator();
+		Pageable page = PageRequest.of(0, 1) ;
+		
+		Iterator<FreeAnummer> all = this.freeAnummerRepo.findAll(page).iterator();
 		if (all.hasNext()) {
 			FreeAnummer free = all.next();
+			LOG.info("Found free anummer " + free.getAnummer());
 			this.freeAnummerRepo.deleteById(free.getAnummer());
+			LOG.info("Popped " + free.getAnummer());
 			return free.getAnummer();
 		}
 		return 0L;
 	}
 
 	/**
-	 * Return the last unallocated anummer (usefull to resume anummer generation)
+	 * Return the last unallocated or allocated anummer (usefull in resuming anummer
+	 * generation)
 	 * 
 	 * @return
 	 */
 	public long getLastAnummer() {
 		// Find the anummer with the highest value
-		Iterator<FreeAnummer> all = this.freeAnummerRepo.findAll().iterator();
+		Iterator<FreeAnummer> allFree = this.freeAnummerRepo.findAll().iterator();
 		long lastAnummer = 0;
-		while (all.hasNext()) {
-			FreeAnummer free = all.next();
+		while (allFree.hasNext()) {
+			FreeAnummer free = allFree.next();
 			if (free.getAnummer() > lastAnummer) {
 				lastAnummer = free.getAnummer();
+			}
+		}
+		Iterator<AllocatedAnummer> allAllocated = this.anummerRepo.findAll().iterator();
+		while (allAllocated.hasNext()) {
+			AllocatedAnummer allocated = allAllocated.next();
+			if (allocated.getAnummer() > lastAnummer) {
+				lastAnummer = allocated.getAnummer();
 			}
 		}
 		return lastAnummer;
@@ -92,7 +110,7 @@ public class AnummerService {
 	 */
 	public int getGemeenteCode(long anummer) {
 		Optional<AllocatedAnummer> result = this.anummerRepo.findById(anummer);
-		if(result.isPresent()) {
+		if (result.isPresent()) {
 			return result.get().getGemeenteCode();
 		}
 		return 0;
@@ -107,7 +125,7 @@ public class AnummerService {
 		// Delete allocated anummers
 		long count = this.anummerRepo.count();
 		this.anummerRepo.deleteAll();
-		
+
 		count += this.freeAnummerRepo.count();
 		this.freeAnummerRepo.deleteAll();
 		return count;

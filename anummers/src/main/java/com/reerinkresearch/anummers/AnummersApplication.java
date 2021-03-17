@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -36,7 +37,7 @@ import com.reerinkresearch.pl.util.Util;
 
 @SpringBootApplication
 @RestController
-public class AnummersApplication {
+public class AnummersApplication implements CommandLineRunner {
 
 	private static final long FIRST_ANUMMER = 1010101025L;
 
@@ -276,9 +277,11 @@ public class AnummersApplication {
 		if (free > 0) {
 			return new AllocatedAnummer(free, 0);
 		}
-		// Generate a fresh one
+
+		// Generate a fresh one, start from the last (highest) anummer
+		long lastAnummer = this.anummerService.getLastAnummer();
 		boolean stopSearching = false;
-		long anummer = FIRST_ANUMMER;
+		long anummer = (lastAnummer > 0 ? lastAnummer + 1 : FIRST_ANUMMER);
 		while (!stopSearching) {
 			Anummer a = iterateToFindAnumber(anummer, ANUMMER_GENERATE_MAXITERATIONS);
 			if (a.isValid()) {
@@ -288,7 +291,8 @@ public class AnummersApplication {
 					LOG.info("New unallocated Anummer generated: " + a.getAnummer());
 					return new AllocatedAnummer(a.getAnummer(), 0);
 				} else {
-					LOG.info("Anummer " + a.getAnummer() + " already allocated to " + gemeenteCode + ", generating a new one");
+					LOG.info("Anummer " + a.getAnummer() + " already allocated to " + gemeenteCode
+							+ ", generating a new one");
 				}
 			}
 			// Stop if we're at the end of the anummer range
@@ -340,4 +344,34 @@ public class AnummersApplication {
 		return builder.build();
 	}
 
+	@Override
+	public void run(String... args) throws Exception {
+		int waitSec = 10;
+		LOG.info("Start generating Anummers after " + waitSec + " seconds");
+		Thread.sleep(waitSec * 1000L);
+		// Use the runner to generate Anummers in a relaxed tempo
+		long lastAnummer = this.anummerService.getLastAnummer();
+		long anummer = (lastAnummer > 0 ? lastAnummer + 1 : FIRST_ANUMMER);
+		LOG.info("Start generating Anummers from " + anummer);
+		boolean isDone = false;
+		while (!isDone) {
+			Anummer a = iterateToFindAnumber(anummer, ANUMMER_GENERATE_MAXITERATIONS);
+			if (a.isValid()) {
+				// Check if the anummer is allocated
+				int gemeenteCode = this.anummerService.getGemeenteCode(a.getAnummer());
+				if (gemeenteCode == 0) {
+					// No, so store it in the free list
+					this.anummerService.storeAnummer(a.getAnummer());
+				}
+			}
+			// Stop if we're at the end of the anummer range
+			if (a.getErrorCode() == 99) {
+				isDone = true;
+			} else {
+				// Try the suggested next value
+				anummer = a.getSkipTo();
+			}
+		}
+		LOG.info("Finished generating Anummers, last: " + anummer);
+	}
 }
