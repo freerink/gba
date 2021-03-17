@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import com.reerinkresearch.anummers.model.Name;
-import com.reerinkresearch.anummers.model.StoredAnummer;
+import com.reerinkresearch.anummers.model.AllocatedAnummer;
 import com.reerinkresearch.anummers.repo.AddressRepository;
 import com.reerinkresearch.anummers.repo.NameRepository;
 import com.reerinkresearch.anummers.service.AnummerService;
@@ -137,7 +137,7 @@ public class AnummersApplication {
 	}
 
 	@GetMapping("/anummers")
-	public StoredAnummer getAnummer(@RequestParam(value = "startFrom", required = false) Long startFrom,
+	public AllocatedAnummer getAnummer(@RequestParam(value = "startFrom", required = false) Long startFrom,
 			@RequestParam(value = "maxIterations", required = false) Long maxIiterations,
 			@RequestParam(value = "anummer", required = false) Long anummer,
 			@RequestParam(value = "firstAvailable", required = false) Boolean firstAvailable) {
@@ -155,13 +155,13 @@ public class AnummersApplication {
 			if (gemeenteCode == 0) {
 				throw new NotFoundException("A nummer: " + anummer);
 			}
-			return new StoredAnummer(anummer, gemeenteCode);
+			return new AllocatedAnummer(anummer, gemeenteCode);
 		} else if (firstAvailable != null && firstAvailable) {
 			// Return the first available A nummer (where gemeenteCode == 0) from the store
 			LOG.info("Get first available A nummer");
 			anummer = this.anummerService.popUnallocatedAnummer();
 			if (anummer > 0) {
-				return new StoredAnummer(anummer, 0);
+				return new AllocatedAnummer(anummer, 0);
 			}
 			throw new NotFoundException("Geen vrij A nummer gevonden");
 		} else {
@@ -173,7 +173,7 @@ public class AnummersApplication {
 			}
 			Anummer n = iterateToFindAnumber(startFrom, maxIiterations);
 			if (n.isValid()) {
-				return new StoredAnummer(n.getAnummer(), 0);
+				return new AllocatedAnummer(n.getAnummer(), 0);
 			}
 		}
 		return null;
@@ -191,7 +191,7 @@ public class AnummersApplication {
 	}
 
 	@PostMapping("/anummers")
-	public StoredAnummer storeAnummer(@RequestBody StoredAnummer a) {
+	public AllocatedAnummer storeAnummer(@RequestBody AllocatedAnummer a) {
 		if (a.getAnummer() == null || a.getGemeenteCode() == null || a.getGemeenteCode() == 0) {
 			throw new BadRequestException("Specify anummer and gemeenteCode (>0)");
 		}
@@ -232,7 +232,7 @@ public class AnummersApplication {
 		LOG.info("Random address gemeenteCode: " + addr.getGemeenteCode());
 
 		// Eerst beschikbare A nummer ophalen
-		StoredAnummer a = this.generateAnummer();
+		AllocatedAnummer a = this.generateAnummer();
 
 		// Store the A nummer for this gemeente
 		a.setGemeenteCode(addr.getGemeenteCode());
@@ -269,12 +269,12 @@ public class AnummersApplication {
 		return format.format(c.getTime());
 	}
 
-	private StoredAnummer generateAnummer() {
+	private AllocatedAnummer generateAnummer() {
 		long free = this.anummerService.popUnallocatedAnummer();
 		LOG.info("Free A nummer: " + (free > 0 ? free : "not found"));
 
 		if (free > 0) {
-			return new StoredAnummer(free, 0);
+			return new AllocatedAnummer(free, 0);
 		}
 		// Generate a fresh one
 		boolean stopSearching = false;
@@ -286,7 +286,7 @@ public class AnummersApplication {
 				int gemeenteCode = this.anummerService.getGemeenteCode(a.getAnummer());
 				if (gemeenteCode == 0) {
 					LOG.info("New unallocated Anummer generated: " + a.getAnummer());
-					return new StoredAnummer(a.getAnummer(), 0);
+					return new AllocatedAnummer(a.getAnummer(), 0);
 				} else {
 					LOG.info("Anummer " + a.getAnummer() + " already allocated to " + gemeenteCode + ", generating a new one");
 				}

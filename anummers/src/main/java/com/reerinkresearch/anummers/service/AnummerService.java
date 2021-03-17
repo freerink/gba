@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.reerinkresearch.anummers.AlreadyExistsException;
 import com.reerinkresearch.anummers.model.FreeAnummer;
-import com.reerinkresearch.anummers.model.StoredAnummer;
+import com.reerinkresearch.anummers.model.AllocatedAnummer;
 import com.reerinkresearch.anummers.repo.AnummerRepository;
 import com.reerinkresearch.anummers.repo.FreeAnummerRepository;
 
@@ -41,9 +41,9 @@ public class AnummerService {
 	 * @param gemeenteCode
 	 */
 	public void storeAnummer(long anummer, int gemeenteCode) {
-		Optional<StoredAnummer> result = this.anummerRepo.findById(anummer);
+		Optional<AllocatedAnummer> result = this.anummerRepo.findById(anummer);
 		if (result.isEmpty()) {
-			this.anummerRepo.save(new StoredAnummer(anummer, gemeenteCode));
+			this.anummerRepo.save(new AllocatedAnummer(anummer, gemeenteCode));
 		} else {
 			throw new AlreadyExistsException(
 					"Anummer " + anummer + " is already allocated for gemeente " + result.get().getGemeenteCode());
@@ -91,7 +91,7 @@ public class AnummerService {
 	 * @return the gemeenteCode or 0 if the anummer is not allocated
 	 */
 	public int getGemeenteCode(long anummer) {
-		Optional<StoredAnummer> result = this.anummerRepo.findById(anummer);
+		Optional<AllocatedAnummer> result = this.anummerRepo.findById(anummer);
 		if(result.isPresent()) {
 			return result.get().getGemeenteCode();
 		}

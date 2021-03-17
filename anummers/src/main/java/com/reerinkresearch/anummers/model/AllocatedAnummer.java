@@ -6,7 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
 @RedisHash("anummer")
-public class StoredAnummer implements Serializable {
+public class AllocatedAnummer implements Serializable {
 
 	private static final long serialVersionUID = -1698456345510392128L;
 	
@@ -14,10 +14,10 @@ public class StoredAnummer implements Serializable {
 	private Long anummer;
 	private Integer gemeenteCode;
 
-	public StoredAnummer() {
+	public AllocatedAnummer() {
 	}
 	
-	public StoredAnummer(Long anummer, Integer gemeenteCode) {
+	public AllocatedAnummer(Long anummer, Integer gemeenteCode) {
 		this.anummer = anummer;
 		this.gemeenteCode = gemeenteCode;
 	}
