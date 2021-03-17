@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-URL=http://192.168.1.245:30913/anummers
+URL=http://localhost:8080/anummers
 echo "Store all A-nummers to $URL"
 IN=anummers-20210125.txt
 TMP=/tmp/anummer.tmp
